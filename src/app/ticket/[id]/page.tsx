@@ -85,15 +85,11 @@ export default function TicketPage() {
             </div>
           </div>
 
-          <div className="text-center mb-8">
-            <div className="inline-flex items-center gap-1.5 bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full text-xs font-bold mb-2">
+          <div className="text-center mb-6">
+            <div className="inline-flex items-center gap-1.5 bg-emerald-100 text-emerald-700 px-3.5 py-1 rounded-full text-xs font-bold shadow-xs">
               <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-              Billet Officiel Prêt
+              Billet Officiel Validé
             </div>
-            <h1 className="text-3xl font-extrabold text-[#111326]">Votre Accès Événement Ubbi</h1>
-            <p className="text-sm text-[#666A80] mt-1">
-              Billet personnalisé selon l'affiche officielle de l'événement et votre QR Code d'accès.
-            </p>
           </div>
 
           {/* Ticket Visualizer with Event Poster Design */}

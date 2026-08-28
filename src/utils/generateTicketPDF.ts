@@ -144,43 +144,33 @@ export async function generateTicketPDF(
     pdf.text(data.ticketNumber, cardX + (cardWidth / 2), perfY + 1, { align: "center" });
 
     // =========================================================
-    // TICKET DETAILS GRID (3 Columns: Titulaire, Date & Heure, Lieu)
+    // TICKET DETAILS GRID (2 Columns: Date & Heure, Lieu)
     // =========================================================
     const gridY = perfY + 10;
 
-    // Col 1: Titulaire du Billet
+    // Col 1: Date & Heure
     pdf.setTextColor(102, 106, 128);
     pdf.setFontSize(7.5);
     pdf.setFont("helvetica", "bold");
-    pdf.text("TITULAIRE", cardX + 10, gridY);
+    pdf.text("DATE & HEURE", cardX + 12, gridY);
     pdf.setTextColor(17, 19, 38);
     pdf.setFontSize(9.5);
     pdf.setFont("helvetica", "bold");
-    pdf.text(data.attendeeName || "Amadou Diallo", cardX + 10, gridY + 5);
-
-    // Col 2: Date & Heure
-    pdf.setTextColor(102, 106, 128);
-    pdf.setFontSize(7.5);
-    pdf.setFont("helvetica", "bold");
-    pdf.text("DATE & HEURE", cardX + 55, gridY);
-    pdf.setTextColor(17, 19, 38);
-    pdf.setFontSize(9);
-    pdf.setFont("helvetica", "bold");
-    pdf.text(data.date, cardX + 55, gridY + 5);
+    pdf.text(data.date, cardX + 12, gridY + 5);
     pdf.setTextColor(102, 106, 128);
     pdf.setFontSize(8);
     pdf.setFont("helvetica", "normal");
-    pdf.text(data.time, cardX + 55, gridY + 9);
+    pdf.text(data.time, cardX + 12, gridY + 9);
 
-    // Col 3: Lieu
+    // Col 2: Lieu
     pdf.setTextColor(102, 106, 128);
     pdf.setFontSize(7.5);
     pdf.setFont("helvetica", "bold");
-    pdf.text("LIEU", cardX + 100, gridY);
+    pdf.text("LIEU DE L'ÉVÉNEMENT", cardX + 75, gridY);
     pdf.setTextColor(17, 19, 38);
-    pdf.setFontSize(9);
+    pdf.setFontSize(9.5);
     pdf.setFont("helvetica", "bold");
-    pdf.text(data.venue, cardX + 100, gridY + 5);
+    pdf.text(data.venue, cardX + 75, gridY + 5);
 
     // =========================================================
     // CENTERED QR CODE CARD

@@ -114,21 +114,16 @@ export const DigitalTicketCard: React.FC<DigitalTicketCardProps> = ({
 
         {/* Détails du Billet */}
         <div className="p-6 space-y-5">
-          <div className="grid grid-cols-3 gap-3 text-xs">
-            <div>
-              <span className="text-[#666A80] block text-[10px] uppercase font-semibold tracking-wider">Titulaire</span>
-              <span className="font-bold text-[#111326] text-xs sm:text-sm truncate block">{attendeeName}</span>
-            </div>
-
+          <div className="grid grid-cols-2 gap-4 text-xs">
             <div>
               <span className="text-[#666A80] block text-[10px] uppercase font-semibold tracking-wider">Date &amp; Heure</span>
-              <span className="font-bold text-[#111326] block text-xs">{date}</span>
-              <span className="text-[#666A80] text-[11px] font-medium">{time}</span>
+              <span className="font-bold text-[#111326] block text-sm">{date}</span>
+              <span className="text-[#666A80] text-xs font-medium">{time}</span>
             </div>
 
             <div>
-              <span className="text-[#666A80] block text-[10px] uppercase font-semibold tracking-wider">Lieu</span>
-              <span className="font-bold text-[#111326] text-xs truncate block">{venue}</span>
+              <span className="text-[#666A80] block text-[10px] uppercase font-semibold tracking-wider">Lieu de l'événement</span>
+              <span className="font-bold text-[#111326] text-sm truncate block">{venue}</span>
             </div>
           </div>
 
