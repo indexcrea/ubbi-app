@@ -36,10 +36,10 @@ export default function HomePage() {
 
       <main className="flex-1 pt-16 sm:pt-20 relative">
         {/* ========================================================= */}
-        {/* 1. HERO SECTION */}
+        {/* 1. HERO SECTION (Fixe en arrière-plan pendant le scroll) */}
         {/* ========================================================= */}
         <section
-          className="relative z-0 overflow-hidden pt-8 pb-16 sm:pt-12 sm:pb-24 lg:pt-16 lg:pb-28 flex flex-col justify-center"
+          className="sticky top-16 sm:top-20 z-0 overflow-hidden pt-8 pb-16 sm:pt-12 sm:pb-24 lg:pt-16 lg:pb-28 min-h-auto lg:min-h-[640px] flex flex-col justify-center"
           style={{ background: "linear-gradient(135deg, #190262 0%, #24027D 100%)" }}
         >
           {/* Contenu textuel avant-plan (z-20) */}
@@ -77,9 +77,9 @@ export default function HomePage() {
         </section>
 
         {/* ========================================================= */}
-        {/* 2. RIDEAU 1 : "ÉVÉNEMENTS À LA UNE" (Superposé au Hero)   */}
+        {/* 2. RIDEAU 1 : "ÉVÉNEMENTS À LA UNE" (Sticky sous la Navbar) */}
         {/* ========================================================= */}
-        <section className="relative z-10 -mt-8 sm:-mt-16 bg-[#F7F7FA] rounded-t-[32px] sm:rounded-t-[48px] shadow-[0_-25px_60px_rgba(0,0,0,0.5)] border-t border-white/20 pt-12 pb-16 md:py-16 text-[#111326]">
+        <section className="sticky top-16 sm:top-20 z-10 bg-[#F7F7FA] rounded-t-[32px] sm:rounded-t-[48px] shadow-[0_-25px_60px_rgba(0,0,0,0.5)] border-t border-white/20 py-12 md:py-16 text-[#111326]">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 md:mb-10 gap-4">
               <div>
@@ -110,9 +110,9 @@ export default function HomePage() {
         </section>
 
         {/* ========================================================= */}
-        {/* 3. RIDEAU 2 : "NOS SERVICES" (Superposé à Événements à la une) */}
+        {/* 3. RIDEAU 2 : "NOS SERVICES" ET SUITE (Glisse par-dessus Événements) */}
         {/* ========================================================= */}
-        <div className="relative z-20 -mt-8 sm:-mt-16 bg-[#190262] rounded-t-[32px] sm:rounded-t-[48px] shadow-[0_-30px_70px_rgba(0,0,0,0.7)] border-t border-white/20">
+        <div className="relative z-20 bg-[#190262] rounded-t-[32px] sm:rounded-t-[48px] shadow-[0_-30px_70px_rgba(0,0,0,0.7)] border-t border-white/20">
           {/* SECTION "NOS SERVICES" */}
           <section
             id="services"
