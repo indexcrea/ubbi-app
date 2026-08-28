@@ -6,6 +6,7 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { UbbiLogo } from "@/components/brand/UbbiLogo";
 import { QRScannerModule } from "@/components/access/QRScannerModule";
+import { getStoredEvents } from "@/utils/eventStore";
 import {
   LayoutDashboard,
   Calendar,
@@ -286,39 +287,32 @@ export default function OrganizerDashboardPage() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-[#E2E4ED]">
-                      <tr className="hover:bg-slate-50">
-                        <td className="px-4 py-3.5 font-bold">Youssou N'Dour — Live</td>
-                        <td className="px-4 py-3.5 text-xs text-[#666A80]">14 Nov 2026</td>
-                        <td className="px-4 py-3.5 font-semibold">1 842 / 2000</td>
-                        <td className="px-4 py-3.5 font-bold text-[#009FEF]">18 420 000 FCFA</td>
-                        <td className="px-4 py-3.5 text-right">
-                          <span className="bg-emerald-100 text-emerald-700 text-xs font-bold px-2.5 py-1 rounded-full">
-                            En cours
-                          </span>
-                        </td>
-                      </tr>
-                      <tr className="hover:bg-slate-50">
-                        <td className="px-4 py-3.5 font-bold">Festival Colors Dakar</td>
-                        <td className="px-4 py-3.5 text-xs text-[#666A80]">05 Déc 2026</td>
-                        <td className="px-4 py-3.5 font-semibold">850 / 1500</td>
-                        <td className="px-4 py-3.5 font-bold text-[#009FEF]">6 250 000 FCFA</td>
-                        <td className="px-4 py-3.5 text-right">
-                          <span className="bg-emerald-100 text-emerald-700 text-xs font-bold px-2.5 py-1 rounded-full">
-                            En cours
-                          </span>
-                        </td>
-                      </tr>
-                      <tr className="hover:bg-slate-50">
-                        <td className="px-4 py-3.5 font-bold">Africa Tech Summit</td>
-                        <td className="px-4 py-3.5 text-xs text-[#666A80]">18 Nov 2026</td>
-                        <td className="px-4 py-3.5 font-semibold">375 / 400</td>
-                        <td className="px-4 py-3.5 font-bold text-[#009FEF]">8 625 000 FCFA</td>
-                        <td className="px-4 py-3.5 text-right">
-                          <span className="bg-blue-100 text-blue-700 text-xs font-bold px-2.5 py-1 rounded-full">
-                            Bientôt
-                          </span>
-                        </td>
-                      </tr>
+                      {getStoredEvents().map((evt) => (
+                        <tr key={evt.id || evt.slug} className="hover:bg-slate-50">
+                          <td className="px-4 py-3.5 font-bold">
+                            <div>{evt.title}</div>
+                            <span className="text-[11px] text-[#666A80] font-normal">{evt.venue}</span>
+                          </td>
+                          <td className="px-4 py-3.5 text-xs text-[#666A80]">{evt.date}</td>
+                          <td className="px-4 py-3.5 font-semibold">
+                            {(evt as any).ticketsSold || 0} / {(evt as any).capacity || 500}
+                          </td>
+                          <td className="px-4 py-3.5 font-bold text-[#009FEF]">
+                            {new Intl.NumberFormat("fr-FR").format(
+                              ((evt as any).ticketsSold || 0) * (evt.minPrice || evt.tickets?.[0]?.price || 2000)
+                            )} FCFA
+                          </td>
+                          <td className="px-4 py-3.5 text-right space-x-2">
+                            <Link
+                              href={`/access-control?event=${evt.slug}`}
+                              className="inline-flex items-center gap-1 bg-[#2A1464] hover:bg-[#1E0D4B] text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow-xs transition-colors"
+                            >
+                              <QrCode className="w-3.5 h-3.5 text-[#009FEF]" />
+                              <span>Contrôle Porte</span>
+                            </Link>
+                          </td>
+                        </tr>
+                      ))}
                     </tbody>
                   </table>
                 </div>

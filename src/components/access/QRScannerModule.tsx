@@ -46,69 +46,112 @@ export function QRScannerModule() {
   const [isLocked, setIsLocked] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
 
-  const [scanHistory, setScanHistory] = useState<ScanRecord[]>([
-    {
-      id: "scan-1",
-      ticketNumber: "UBBI-2026-9842",
-      attendeeName: "Amadou Diallo",
-      category: "VIP",
-      timestamp: "20:14:05",
-      status: "SUCCESS",
-      gate: "Smartphone Agent 1",
-    },
-    {
-      id: "scan-2",
-      ticketNumber: "UBBI-2026-7712",
-      attendeeName: "Fatou Sow",
-      category: "STANDARD",
-      timestamp: "20:12:30",
-      status: "SUCCESS",
-      gate: "Smartphone Agent 2",
-    },
-    {
-      id: "scan-3",
-      ticketNumber: "UBBI-2026-3390",
-      attendeeName: "Omar Ndiaye",
-      category: "VIP",
-      timestamp: "20:10:15",
-      status: "DUPLICATE",
-      gate: "Smartphone Agent 1",
-    },
-  ]);
+  const [cameraActive, setCameraActive] = useState(false);
+  const [cameraError, setCameraError] = useState<string | null>(null);
 
+  const [scanHistory, setScanHistory] = useState<ScanRecord[]>([]);
   const [stats, setStats] = useState({
-    totalScanned: 842,
-    totalTickets: 1200,
-    validScans: 839,
-    duplicates: 3,
+    totalScanned: 0,
+    totalTickets: 100,
+    validScans: 0,
+    duplicates: 0,
   });
 
   const videoRef = useRef<HTMLVideoElement>(null);
+
+  const startCamera = async () => {
+    try {
+      setCameraError(null);
+      if (typeof window === "undefined" || !navigator?.mediaDevices?.getUserMedia) {
+        setCameraError("La caméra n'est pas disponible sur cet appareil.");
+        return;
+      }
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: cameraFacing },
+      });
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        videoRef.current.play();
+      }
+      setCameraActive(true);
+    } catch (err) {
+      console.error("Camera access error:", err);
+      setCameraError("Accès caméra refusé. Veuillez autoriser la caméra dans votre navigateur.");
+      setCameraActive(false);
+    }
+  };
+
+  const stopCamera = () => {
+    if (videoRef.current && videoRef.current.srcObject) {
+      const stream = videoRef.current.srcObject as MediaStream;
+      stream.getTracks().forEach((track) => track.stop());
+      videoRef.current.srcObject = null;
+    }
+    setCameraActive(false);
+  };
 
   useEffect(() => {
     const loadedEvents = getStoredEvents();
     setEvents(loadedEvents);
     
-    // Read query param if passed
+    // Read query param if passed (?event=slug or ?id=id)
     if (typeof window !== "undefined") {
       const searchParams = new URLSearchParams(window.location.search);
-      const urlEvent = searchParams.get("event");
-      if (urlEvent && loadedEvents.some((e) => e.slug === urlEvent)) {
-        setSelectedEventSlug(urlEvent);
-        setIsLocked(getScanLockStatus(urlEvent));
-        return;
+      const urlEvent = searchParams.get("event") || searchParams.get("id");
+      if (urlEvent) {
+        const found = loadedEvents.find((e) => e.slug === urlEvent || e.id === urlEvent);
+        if (found) {
+          setSelectedEventSlug(found.slug);
+          setIsLocked(getScanLockStatus(found.slug));
+
+          const capacity = (found as any).capacity || 500;
+          const ticketsSold = (found as any).ticketsSold || (found.tickets ? 15 : 0);
+          setStats({
+            totalScanned: 0,
+            totalTickets: capacity,
+            validScans: 0,
+            duplicates: 0,
+          });
+          return;
+        }
       }
     }
 
     if (loadedEvents.length > 0) {
-      setSelectedEventSlug(loadedEvents[0].slug);
-      setIsLocked(getScanLockStatus(loadedEvents[0].slug));
+      const first = loadedEvents[0];
+      setSelectedEventSlug(first.slug);
+      setIsLocked(getScanLockStatus(first.slug));
+      const capacity = (first as any).capacity || 500;
+      setStats({
+        totalScanned: 0,
+        totalTickets: capacity,
+        validScans: 0,
+        duplicates: 0,
+      });
     }
+
+    // Auto start camera if available
+    startCamera();
+
+    return () => {
+      stopCamera();
+    };
   }, []);
 
   const handleEventChange = (slug: string) => {
     setSelectedEventSlug(slug);
     setIsLocked(getScanLockStatus(slug));
+
+    const found = events.find((e) => e.slug === slug);
+    if (found) {
+      const capacity = (found as any).capacity || 500;
+      setStats({
+        totalScanned: 0,
+        totalTickets: capacity,
+        validScans: 0,
+        duplicates: 0,
+      });
+    }
   };
 
   const toggleLockState = () => {
@@ -291,31 +334,72 @@ export function QRScannerModule() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             {/* Camera Viewfinder Container */}
             <div className="lg:col-span-7 bg-[#0a0331] rounded-3xl p-6 text-white shadow-2xl border border-white/10 flex flex-col justify-between min-h-[420px] relative overflow-hidden">
+              {/* Background live video stream */}
+              <video
+                ref={videoRef}
+                autoPlay
+                playsInline
+                muted
+                className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-300 ${
+                  cameraActive ? "opacity-100" : "opacity-0"
+                }`}
+              />
+
+              {/* Dark overlay backdrop over video */}
+              <div className="absolute inset-0 bg-[#0a0331]/40 pointer-events-none" />
+
               <div className="flex items-center justify-between z-10">
                 <div className="flex items-center gap-2">
                   <span className="relative flex h-3 w-3">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#00A86B] opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-3 w-3 bg-[#00A86B]"></span>
+                    <span className={`animate-ping absolute inline-flex h-full w-full rounded-full ${cameraActive ? "bg-[#00A86B]" : "bg-amber-400"} opacity-75`}></span>
+                    <span className={`relative inline-flex rounded-full h-3 w-3 ${cameraActive ? "bg-[#00A86B]" : "bg-amber-400"}`}></span>
                   </span>
-                  <span className="text-xs font-extrabold tracking-wide uppercase">Viseur Caméra Smartphone</span>
+                  <span className="text-xs font-extrabold tracking-wide uppercase">
+                    {cameraActive ? "Caméra Smartphone Active en Direct" : "Viseur Caméra Smartphone"}
+                  </span>
                 </div>
+
+                {/* Camera control button */}
+                <button
+                  onClick={cameraActive ? stopCamera : startCamera}
+                  className="bg-white/10 hover:bg-white/20 text-white font-bold text-xs px-3 py-1.5 rounded-xl border border-white/20 flex items-center gap-1.5 transition-all"
+                >
+                  <Camera className="w-3.5 h-3.5 text-[#009FEF]" />
+                  <span>{cameraActive ? "Arrêter Caméra" : "Activer Caméra"}</span>
+                </button>
               </div>
 
               {/* Viewfinder Frame with Laser Scan Bar */}
-              <div className="relative my-8 mx-auto w-64 h-64 sm:w-72 sm:h-72 border-2 border-dashed border-[#009FEF]/60 rounded-3xl flex items-center justify-center bg-black/30 backdrop-blur-sm overflow-hidden">
-                <div className="w-full h-1 bg-[#009FEF] absolute shadow-[0_0_15px_#009FEF] animate-pulse top-1/2 -translate-y-1/2" />
-                <div className="text-center p-4">
-                  <Scan className="w-16 h-16 text-[#009FEF]/70 mx-auto animate-bounce mb-2" />
-                  <p className="text-xs font-semibold text-slate-300">
-                    Placez le QR Code du billet dans le cadran
-                  </p>
-                </div>
+              <div className="relative z-10 my-8 mx-auto w-64 h-64 sm:w-72 sm:h-72 border-2 border-dashed border-[#009FEF] rounded-3xl flex items-center justify-center bg-black/40 backdrop-blur-xs overflow-hidden shadow-2xl">
+                <div className="w-full h-1 bg-[#009FEF] absolute shadow-[0_0_20px_#009FEF] animate-pulse top-1/2 -translate-y-1/2 z-20" />
+
+                {!cameraActive ? (
+                  <div className="text-center p-4 z-10 space-y-3">
+                    <Camera className="w-14 h-14 text-[#009FEF] mx-auto animate-bounce" />
+                    <p className="text-xs font-semibold text-slate-200">
+                      {cameraError || "Autorisez l'accès à la caméra pour scanner les QR Codes en direct"}
+                    </p>
+                    <button
+                      onClick={startCamera}
+                      className="bg-[#009FEF] hover:bg-[#0084C9] text-white font-extrabold text-xs px-4 py-2 rounded-xl shadow-md transition-all inline-block"
+                    >
+                      Ouvrir la Caméra 📷
+                    </button>
+                  </div>
+                ) : (
+                  <div className="text-center p-4 z-10">
+                    <Scan className="w-12 h-12 text-[#009FEF]/80 mx-auto animate-pulse mb-2" />
+                    <p className="text-[11px] font-bold text-white bg-black/60 px-3 py-1 rounded-full backdrop-blur-md inline-block">
+                      Scannage automatique des QR Codes en cours...
+                    </p>
+                  </div>
+                )}
               </div>
 
               {/* Instant Scan Validation Banner Feedback */}
               {lastScanResult && (
                 <div
-                  className={`p-4 rounded-2xl text-center font-bold text-sm transition-all animate-in fade-in slide-in-from-bottom-2 ${
+                  className={`relative z-10 p-4 rounded-2xl text-center font-bold text-sm transition-all animate-in fade-in slide-in-from-bottom-2 ${
                     lastScanResult.status === "SUCCESS"
                       ? "bg-[#00A86B] text-white"
                       : "bg-[#E52E2E] text-white"
