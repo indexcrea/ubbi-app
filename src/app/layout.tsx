@@ -41,7 +41,9 @@ export const metadata: Metadata = {
       "Ouvre l'expérience. La nouvelle façon de découvrir, acheter et vivre vos événements au Sénégal.",
   },
   icons: {
-    icon: "/favicon.ico",
+    icon: "/ubbi-monogramme-u.png",
+    shortcut: "/ubbi-monogramme-u.png",
+    apple: "/ubbi-monogramme-u.png",
   },
 };
 
