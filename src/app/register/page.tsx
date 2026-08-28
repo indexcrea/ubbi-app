@@ -3,9 +3,10 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Mail, Lock, User, Phone, ChevronDown, Sparkles, X } from "lucide-react";
+import { Mail, Lock, User, Phone, ChevronDown, Sparkles, X, Loader2 } from "lucide-react";
 import { COUNTRY_CODES } from "@/data/countryCodes";
 import { LandingPageBackdrop } from "@/components/layout/LandingPageBackdrop";
+import { supabase, isSupabaseConfigured } from "@/utils/supabaseClient";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -15,9 +16,29 @@ export default function RegisterPage() {
   const [countryCode, setCountryCode] = useState("+221");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleRegister = (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
+
+    if (isSupabaseConfigured()) {
+      try {
+        await supabase.from("profiles").insert([
+          {
+            email,
+            first_name: firstName,
+            last_name: lastName,
+            phone: `${countryCode} ${phone}`,
+            role: "organizer",
+          },
+        ]);
+      } catch (err) {
+        console.error("Supabase profile save error", err);
+      }
+    }
+
+    setIsLoading(false);
     router.push("/dashboard/organizer");
   };
 
