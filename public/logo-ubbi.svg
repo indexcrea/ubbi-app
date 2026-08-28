@@ -1,0 +1,21 @@
+<svg width="260" height="75" viewBox="0 0 260 75" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Symbol -->
+  <g id="UbbiSymbol">
+    <!-- Purple U curve -->
+    <path d="M12 12C6 24 4 48 16 66C26 80 42 90 62 90L52 98C32 98 14 84 6 64C-2 44 0 22 12 12Z" fill="#2A1464"/>
+    <path d="M10 10C2 22 2 52 14 68C26 84 46 92 64 88L58 98C38 98 16 88 4 68C-4 48 -2 22 10 10Z" fill="#2A1464"/>
+    <!-- Door -->
+    <polygon points="46,4 72,10 72,64 46,70" fill="#009FEF"/>
+    <polygon points="46,4 72,10 72,64 46,70" fill="none" stroke="#2A1464" stroke-width="2.5"/>
+    <rect x="50" y="34" width="2" height="8" rx="1" fill="#FFFFFF"/>
+    <!-- Ray -->
+    <polygon points="36,68 86,80 62,64" fill="#009FEF"/>
+  </g>
+  
+  <!-- Wordmark -->
+  <text x="82" y="52" font-family="'Poppins', sans-serif" font-weight="800" font-size="48" fill="#2A1464" letter-spacing="-2">ubbi</text>
+  <circle cx="177" cy="22" r="5" fill="#009FEF"/>
+  
+  <!-- Tagline -->
+  <text x="82" y="68" font-family="'Poppins', sans-serif" font-weight="700" font-size="9" fill="#009FEF" letter-spacing="2">TICKETING &amp; EVENT ACCESS</text>
+</svg>

@@ -1,0 +1,100 @@
+"use client";
+
+import React, { useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { Mail, Lock, ArrowRight, X } from "lucide-react";
+import { LandingPageBackdrop } from "@/components/layout/LandingPageBackdrop";
+
+export default function LoginPage() {
+  const router = useRouter();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    router.push("/dashboard/organizer");
+  };
+
+  return (
+    <div className="relative min-h-screen text-[#111326] antialiased overflow-hidden">
+      {/* 1. Landing Page Floue en Arrière-plan */}
+      <LandingPageBackdrop />
+
+      {/* 2. Superposition Sombre avec Flou Glassmorphism */}
+      <div className="fixed inset-0 z-50 bg-[#0a0331]/50 backdrop-blur-md flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+        
+        {/* 3. Fenêtre Modal Card */}
+        <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-2xl border border-white/60 max-w-md w-full relative z-50 animate-in fade-in zoom-in-95 duration-200 my-auto">
+          
+          {/* Bouton de Fermeture X */}
+          <Link
+            href="/"
+            className="absolute top-5 right-5 p-2 rounded-full text-[#666A80] hover:text-[#111326] hover:bg-[#F7F7FA] transition-colors"
+            title="Fermer et retourner à l'accueil"
+          >
+            <X className="w-5 h-5" />
+          </Link>
+
+          <div className="text-center mb-5 pr-6 pl-2">
+            <h2 className="text-2xl font-extrabold text-[#111326]">Connexion</h2>
+            <p className="mt-1 text-xs text-[#666A80]">
+              Connectez-vous pour accéder à votre espace Ubbi.
+            </p>
+          </div>
+
+          <form onSubmit={handleLogin} className="space-y-4">
+            <div>
+              <label className="block text-xs font-semibold text-[#666A80] mb-1">
+                Adresse Email *
+              </label>
+              <div className="relative">
+                <Mail className="w-4 h-4 text-[#666A80] absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <input
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="exemple@domaine.sn"
+                  className="w-full bg-[#F7F7FA] border border-[#E2E4ED] focus:border-[#009FEF] focus:bg-white rounded-xl pl-10 pr-4 py-2.5 text-sm font-medium transition-colors outline-none"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-[#666A80] mb-1">
+                Mot de passe *
+              </label>
+              <div className="relative">
+                <Lock className="w-4 h-4 text-[#666A80] absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <input
+                  type="password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="w-full bg-[#F7F7FA] border border-[#E2E4ED] focus:border-[#009FEF] focus:bg-white rounded-xl pl-10 pr-4 py-2.5 text-sm font-medium transition-colors outline-none"
+                />
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              className="w-full bg-[#2A1464] hover:bg-[#1F0D4F] text-white font-extrabold py-3.5 rounded-xl shadow-lg flex items-center justify-center gap-2 text-sm transition-all mt-2"
+            >
+              <span>Se connecter</span>
+              <ArrowRight className="w-4 h-4 text-[#009FEF]" />
+            </button>
+          </form>
+
+          <div className="mt-6 pt-4 border-t border-[#E2E4ED] text-center text-xs text-[#666A80]">
+            Pas encore de compte ?{" "}
+            <Link href="/register" className="font-bold text-[#009FEF] hover:underline">
+              Créer un compte
+            </Link>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

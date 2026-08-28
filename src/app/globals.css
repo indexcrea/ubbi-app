@@ -1,0 +1,52 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --ubbi-purple-start: #190262;
+    --ubbi-purple-end: #24027D;
+    --ubbi-blue-electric: #009FEF;
+  }
+}
+
+body {
+  background-color: #190262;
+  color: #FFFFFF;
+  font-family: 'Poppins', system-ui, -apple-system, sans-serif;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Custom Deep Purple Linear Gradient (#190262 -> #24027D) */
+.bg-ubbi-purple-gradient {
+  background: linear-gradient(135deg, #190262 0%, #24027D 100%);
+}
+
+/* Glass Dark Purple Card */
+.dark-glass-card {
+  background: rgba(36, 2, 125, 0.4);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.dark-glass-card:hover {
+  border-color: rgba(0, 159, 239, 0.6);
+  box-shadow: 0 12px 35px -5px rgba(36, 2, 125, 0.4);
+  transform: translateY(-3px);
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #190262;
+}
+::-webkit-scrollbar-thumb {
+  background: #24027D;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #009FEF;
+}
