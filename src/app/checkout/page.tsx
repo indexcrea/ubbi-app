@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, Suspense } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Navbar } from "@/components/layout/Navbar";
@@ -21,7 +21,8 @@ import {
   Ticket,
 } from "lucide-react";
 
-const COUNTRY_CODES = [
+const WORLD_COUNTRY_CODES = [
+  // West & Central Africa (Priority)
   { code: "+221", flag: "🇸🇳", country: "Sénégal" },
   { code: "+225", flag: "🇨🇮", country: "Côte d'Ivoire" },
   { code: "+223", flag: "🇲🇱", country: "Mali" },
@@ -31,24 +32,64 @@ const COUNTRY_CODES = [
   { code: "+220", flag: "🇬🇲", country: "Gambie" },
   { code: "+228", flag: "🇹🇬", country: "Togo" },
   { code: "+229", flag: "🇧🇯", country: "Bénin" },
+  { code: "+234", flag: "🇳🇬", country: "Nigeria" },
+  { code: "+233", flag: "🇬🇭", country: "Ghana" },
+  { code: "+227", flag: "🇳🇪", country: "Niger" },
+  { code: "+238", flag: "🇨🇻", country: "Cap-Vert" },
+  { code: "+232", flag: "🇸🇱", country: "Sierra Leone" },
+  { code: "+231", flag: "🇱🇷", country: "Libéria" },
   { code: "+237", flag: "🇨🇲", country: "Cameroun" },
   { code: "+241", flag: "🇬🇦", country: "Gabon" },
   { code: "+242", flag: "🇨🇬", country: "Congo (Brazzaville)" },
   { code: "+243", flag: "🇨🇩", country: "RDC (Kinshasa)" },
-  { code: "+234", flag: "🇳🇬", country: "Nigeria" },
+  { code: "+235", flag: "🇹🇩", country: "Tchad" },
+  { code: "+236", flag: "🇨🇫", country: "Centrafrique" },
+  { code: "+240", flag: "🇬🇶", country: "Guinée Équatoriale" },
+
+  // North & East & Southern Africa
   { code: "+212", flag: "🇲🇦", country: "Maroc" },
   { code: "+213", flag: "🇩🇿", country: "Algérie" },
   { code: "+216", flag: "🇹🇳", country: "Tunisie" },
+  { code: "+20", flag: "🇪🇬", country: "Égypte" },
+  { code: "+254", flag: "🇰🇪", country: "Kenya" },
+  { code: "+250", flag: "🇷🇼", country: "Rwanda" },
+  { code: "+255", flag: "🇹🇿", country: "Tanzanie" },
+  { code: "+256", flag: "🇺🇬", country: "Ouganda" },
+  { code: "+251", flag: "🇪🇹", country: "Éthiopie" },
+  { code: "+27", flag: "🇿🇦", country: "Afrique du Sud" },
+  { code: "+244", flag: "🇦🇴", country: "Angola" },
+  { code: "+258", flag: "🇲🇿", country: "Mozambique" },
+  { code: "+261", flag: "🇲🇬", country: "Madagascar" },
+
+  // Europe
   { code: "+33", flag: "🇫🇷", country: "France" },
-  { code: "+1", flag: "🇺🇸", country: "États-Unis / Canada" },
-  { code: "+44", flag: "🇬🇧", country: "Royaume-Uni" },
-  { code: "+34", flag: "🇪🇸", country: "Espagne" },
-  { code: "+39", flag: "🇮🇹", country: "Italie" },
   { code: "+32", flag: "🇧🇪", country: "Belgique" },
   { code: "+41", flag: "🇨🇭", country: "Suisse" },
+  { code: "+34", flag: "🇪🇸", country: "Espagne" },
+  { code: "+39", flag: "🇮🇹", country: "Italie" },
+  { code: "+44", flag: "🇬🇧", country: "Royaume-Uni" },
   { code: "+49", flag: "🇩🇪", country: "Allemagne" },
+  { code: "+31", flag: "🇳🇱", country: "Pays-Bas" },
+  { code: "+351", flag: "🇵🇹", country: "Portugal" },
+  { code: "+46", flag: "🇸🇪", country: "Suède" },
+  { code: "+47", flag: "🇳🇴", country: "Norvège" },
+  { code: "+45", flag: "🇩🇰", country: "Danemark" },
+  { code: "+358", flag: "🇫🇮", country: "Finlande" },
+  { code: "+90", flag: "🇹🇷", country: "Turquie" },
+
+  // Americas & Middle East & Asia
+  { code: "+1", flag: "🇺🇸", country: "États-Unis / Canada" },
   { code: "+971", flag: "🇦🇪", country: "Émirats Arabes Unis" },
   { code: "+966", flag: "🇸🇦", country: "Arabie Saoudite" },
+  { code: "+974", flag: "🇶🇦", country: "Qatar" },
+  { code: "+965", flag: "🇰🇼", country: "Koweït" },
+  { code: "+86", flag: "🇨🇳", country: "Chine" },
+  { code: "+81", flag: "🇯🇵", country: "Japon" },
+  { code: "+82", flag: "🇰🇷", country: "Corée du Sud" },
+  { code: "+91", flag: "🇮🇳", country: "Inde" },
+  { code: "+55", flag: "🇧🇷", country: "Brésil" },
+  { code: "+52", flag: "🇲🇽", country: "Mexique" },
+  { code: "+61", flag: "🇦🇺", country: "Australie" },
 ];
 
 function CheckoutContent() {
@@ -78,6 +119,31 @@ function CheckoutContent() {
     phone: "",
     paymentMethod: "wave" as "wave" | "om" | "card",
   });
+
+  // Auto-detect visitor's country by IP location
+  useEffect(() => {
+    async function detectCountryByIP() {
+      try {
+        const response = await fetch("https://ipapi.co/json/", { cache: "no-store" });
+        if (response.ok) {
+          const data = await response.json();
+          if (data && data.country_calling_code) {
+            const callingCode = data.country_calling_code.startsWith("+")
+              ? data.country_calling_code
+              : `+${data.country_calling_code}`;
+
+            const matched = WORLD_COUNTRY_CODES.some((c) => c.code === callingCode);
+            if (matched) {
+              setCountryCode(callingCode);
+            }
+          }
+        }
+      } catch (err) {
+        // Fallback default stays +221 Senegal
+      }
+    }
+    detectCountryByIP();
+  }, []);
 
   const [isProcessing, setIsProcessing] = useState(false);
   const [isConfirmed, setIsConfirmed] = useState(false);
@@ -227,7 +293,7 @@ function CheckoutContent() {
                         onChange={(e) => setCountryCode(e.target.value)}
                         className="bg-[#F7F7FA] border border-[#E2E4ED] focus:border-[#009FEF] rounded-xl px-3 py-2.5 text-xs font-bold text-[#111326] outline-none cursor-pointer"
                       >
-                        {COUNTRY_CODES.map((c) => (
+                        {WORLD_COUNTRY_CODES.map((c) => (
                           <option key={c.code + c.country} value={c.code}>
                             {c.flag} {c.code} ({c.country})
                           </option>
