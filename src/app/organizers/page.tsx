@@ -207,7 +207,7 @@ export default function OrganizersPage() {
               </h2>
 
               <p className="text-slate-600 leading-relaxed text-sm sm:text-base">
-                Le jour J, démarrez le scannage en 1 clic depuis votre espace organisateur. Pour vos 1 à 3 agents de porte, partagez simplement un lien de scan sécurisé par WhatsApp sans partager votre mot de passe. Suivez les entrées scannées en direct et verrouillez les scans dès la fermeture des portes.
+                Le jour J, démarrez le scannage en 1 clic depuis votre espace organisateur. Pour vos 1 à 3 agents de porte, partagez simplement un lien de scan sécurisé. Suivez les entrées scannées en direct et verrouillez les scans dès la fermeture des portes.
               </p>
 
               {/* Key Features List */}
