@@ -89,7 +89,7 @@ export const DigitalTicketCard: React.FC<DigitalTicketCardProps> = ({
             />
             <div>
               <span className="text-[9px] font-extrabold text-[#009FEF] uppercase tracking-wider block">
-                Événement Officiel
+                Événement
               </span>
               <h3 className="text-base font-extrabold text-[#111326] leading-tight">{eventName}</h3>
             </div>

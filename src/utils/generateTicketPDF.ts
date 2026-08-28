@@ -110,7 +110,7 @@ export async function generateTicketPDF(
     pdf.setTextColor(0, 159, 239);
     pdf.setFontSize(6.5);
     pdf.setFont("helvetica", "bold");
-    pdf.text("EVENEMENT OFFICIEL", cardX + 22, infoBarY + 6);
+    pdf.text("EVENEMENT", cardX + 22, infoBarY + 6);
 
     pdf.setTextColor(17, 19, 38);
     pdf.setFontSize(12);

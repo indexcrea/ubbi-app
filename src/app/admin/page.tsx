@@ -25,6 +25,7 @@ import {
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { supabase, isSupabaseConfigured } from "@/utils/supabaseClient";
+import { getLoggedInUser } from "@/utils/authStore";
 import { getStoredEvents } from "@/utils/eventStore";
 
 export default function AdminDashboardPage() {
@@ -64,49 +65,33 @@ export default function AdminDashboardPage() {
     setAdminPinInput("");
   };
 
-  // Initial mock users + live Supabase users
-  const initialUsers = [
-    {
-      id: "usr_1",
-      first_name: "Mamadou",
-      last_name: "Diallo",
-      email: "mamadou.diallo@gmail.com",
-      phone: "+221 77 654 32 10",
-      role: "organizer",
-      created_at: "2026-08-28T10:15:00Z",
-      events_count: 2,
-    },
-    {
-      id: "usr_2",
-      first_name: "Awa",
-      last_name: "Ndiaye",
-      email: "awa.ndiaye@dakar-events.sn",
-      phone: "+221 78 123 45 67",
-      role: "organizer",
-      created_at: "2026-08-27T14:30:00Z",
-      events_count: 1,
-    },
-    {
-      id: "usr_3",
-      first_name: "Cheikh",
-      last_name: "Ba",
-      email: "cheikh.ba@gmail.com",
-      phone: "+221 76 987 65 43",
-      role: "customer",
-      created_at: "2026-08-26T09:20:00Z",
-      events_count: 0,
-    },
-    {
-      id: "usr_4",
-      first_name: "Fatou",
-      last_name: "Sow",
-      email: "fatou.sow@yahoo.fr",
-      phone: "+221 77 111 22 33",
-      role: "customer",
-      created_at: "2026-08-25T18:45:00Z",
-      events_count: 0,
-    },
-  ];
+  // Real Registered Organizers from Local Storage & Auth Store
+  const getRealLocalOrganizers = () => {
+    if (typeof window === "undefined") return [];
+    let list: any[] = [];
+    try {
+      const raw = localStorage.getItem("ubbi_registered_users");
+      if (raw) list = JSON.parse(raw);
+    } catch (e) {}
+
+    const currentUser = getLoggedInUser();
+    if (currentUser) {
+      const exists = list.some((u) => u.email === currentUser.email);
+      if (!exists) {
+        list.unshift({
+          id: `usr_organizer_${Date.now()}`,
+          first_name: currentUser.firstName || "Organisateur",
+          last_name: currentUser.lastName || "",
+          email: currentUser.email,
+          phone: currentUser.phone || "+221 77 000 00 00",
+          role: currentUser.role || "organizer",
+          created_at: new Date().toISOString(),
+          events_count: 1,
+        });
+      }
+    }
+    return list;
+  };
 
   const fetchSupabaseProfiles = async () => {
     setIsLoading(true);
@@ -127,8 +112,9 @@ export default function AdminDashboardPage() {
     fetchSupabaseProfiles();
   }, []);
 
-  // Combine live Supabase users with mock users
-  const allUsers = [...dbProfiles, ...initialUsers.filter((u) => !dbProfiles.some((db) => db.email === u.email))];
+  // Real Organizers (Supabase + Local session user)
+  const localUsers = getRealLocalOrganizers();
+  const allUsers = [...dbProfiles, ...localUsers.filter((u) => !dbProfiles.some((db) => db.email === u.email))];
   const organizerUsers = allUsers.filter((u) => u.role === "organizer" || !u.role);
 
   const filteredUsers = organizerUsers.filter(
@@ -139,9 +125,10 @@ export default function AdminDashboardPage() {
       u.phone?.includes(searchTerm)
   );
 
+  // Real Metrics calculated from real events
   const events = getStoredEvents();
-  const totalTicketsSold = events.reduce((acc, evt) => acc + ((evt as any).ticketsSold || 120), 840);
-  const totalGrossRevenue = events.reduce((acc, evt) => acc + ((evt as any).price || evt.minPrice || 15000) * ((evt as any).ticketsSold || 120), 18500000);
+  const totalTicketsSold = events.reduce((acc, evt) => acc + ((evt as any).ticketsSold || 0), 0);
+  const totalGrossRevenue = events.reduce((acc, evt) => acc + ((evt as any).ticketsSold || 0) * (evt.minPrice || evt.tickets?.[0]?.price || 2000), 0);
   const totalUbbiCommission = Math.round(totalGrossRevenue * 0.035); // 3.5% commission
 
   const formatFCFA = (val: number) => {
