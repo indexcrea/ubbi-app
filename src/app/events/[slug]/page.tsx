@@ -49,7 +49,7 @@ export default function EventDetailPage() {
     event.tickets.find((t) => t.id === selectedTicketId) || event.tickets[0];
 
   const subtotal = selectedTicket.price * quantity;
-  const serviceFee = Math.round(subtotal * 0.05); // 5% fee
+  const serviceFee = Math.round(subtotal * 0.035); // 3.5% fee
   const total = subtotal + serviceFee;
 
   const handleCheckout = () => {
@@ -267,7 +267,7 @@ export default function EventDetailPage() {
                       <span>{new Intl.NumberFormat("fr-FR").format(subtotal)} FCFA</span>
                     </div>
                     <div className="flex justify-between text-[#666A80]">
-                      <span>Frais d'émission Ubbi (5%)</span>
+                      <span>Frais d'émission Ubbi (3,5%)</span>
                       <span>{new Intl.NumberFormat("fr-FR").format(serviceFee)} FCFA</span>
                     </div>
                     <div className="flex justify-between font-extrabold text-sm text-[#2A1464] pt-2 border-t border-[#E2E4ED]">

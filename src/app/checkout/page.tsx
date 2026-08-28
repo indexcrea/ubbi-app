@@ -5,7 +5,8 @@ import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
-import { MOCK_EVENTS } from "@/data/mockEvents";
+import { getStoredEvents } from "@/utils/eventStore";
+import { getLoggedInUser } from "@/utils/authStore";
 import {
   Check,
   ShieldCheck,
@@ -24,19 +25,25 @@ function CheckoutContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  const eventSlug = searchParams.get("event") || "youssou-ndour-live";
-  const ticketId = searchParams.get("ticket") || "t1-vip";
+  const eventSlug = searchParams.get("event") || "";
+  const ticketId = searchParams.get("ticket") || "";
   const qtyParam = parseInt(searchParams.get("qty") || "1", 10);
 
-  const event = MOCK_EVENTS.find((e) => e.slug === eventSlug) || MOCK_EVENTS[0];
+  const allAvailableEvents = getStoredEvents();
+  const event =
+    allAvailableEvents.find((e) => e.slug === eventSlug || e.id === eventSlug) ||
+    allAvailableEvents[0];
+
   const ticketTier =
     event.tickets.find((t) => t.id === ticketId) || event.tickets[0];
 
+  const loggedUser = typeof window !== "undefined" ? getLoggedInUser() : null;
+
   const [step, setStep] = useState<number>(1);
   const [formData, setFormData] = useState({
-    fullName: "Amadou Diallo",
-    email: "amadou.diallo@example.sn",
-    phone: "+221 77 842 90 12",
+    fullName: loggedUser ? `${loggedUser.firstName || ""} ${loggedUser.lastName || ""}`.trim() : "",
+    email: loggedUser ? loggedUser.email : "",
+    phone: loggedUser ? loggedUser.phone || "" : "",
     paymentMethod: "wave" as "wave" | "om" | "card",
   });
 
@@ -44,7 +51,7 @@ function CheckoutContent() {
   const [isConfirmed, setIsConfirmed] = useState(false);
 
   const subtotal = ticketTier.price * qtyParam;
-  const serviceFee = Math.round(subtotal * 0.05);
+  const serviceFee = Math.round(subtotal * 0.035); // 3.5% fee
   const total = subtotal + serviceFee;
 
   const handlePay = () => {
@@ -371,7 +378,7 @@ function CheckoutContent() {
                   <span>{new Intl.NumberFormat("fr-FR").format(subtotal)} FCFA</span>
                 </div>
                 <div className="flex justify-between text-slate-400">
-                  <span>Frais de plateforme Ubbi</span>
+                  <span>Frais de plateforme Ubbi (3,5%)</span>
                   <span>{new Intl.NumberFormat("fr-FR").format(serviceFee)} FCFA</span>
                 </div>
                 <div className="flex justify-between text-base font-extrabold text-white pt-2 border-t border-white/10">
