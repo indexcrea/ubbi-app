@@ -47,8 +47,8 @@ export default function AdminDashboardPage() {
 
   const handleAdminLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    // Default Secret Founder Passcode: ubbi2026 (or ubbi)
-    if (adminPinInput.trim() === "ubbi2026" || adminPinInput.trim() === "ubbi") {
+    // Secret Founder Passcode
+    if (adminPinInput.trim() === "Proverbes3:9-10") {
       sessionStorage.setItem("ubbi_admin_authenticated", "true");
       setIsAuthenticated(true);
       setPinError(false);
