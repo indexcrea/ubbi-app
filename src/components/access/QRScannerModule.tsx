@@ -45,6 +45,7 @@ export function QRScannerModule() {
   const [lastScanResult, setLastScanResult] = useState<ScanRecord | null>(null);
   const [isLocked, setIsLocked] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
+  const [activeAgentCount, setActiveAgentCount] = useState(1);
 
   const [cameraActive, setCameraActive] = useState(false);
   const [cameraError, setCameraError] = useState<string | null>(null);
@@ -323,10 +324,14 @@ export function QRScannerModule() {
                 <span className="text-xs font-bold uppercase tracking-wider">Smartphones Agents</span>
                 <Smartphone className="w-5 h-5 text-[#2A1464]" />
               </div>
-              <div className="text-2xl sm:text-3xl font-extrabold text-[#2A1464]">
-                3 <span className="text-xs font-normal text-[#666A80]">max actifs</span>
+              <div className="text-2xl sm:text-3xl font-extrabold text-[#2A1464] flex items-baseline gap-1">
+                <span>{activeAgentCount}</span>
+                <span className="text-xs font-normal text-[#666A80]">/ 3 max actifs</span>
               </div>
-              <p className="text-[11px] text-[#00A86B] font-semibold mt-2">● Synchronisation en direct</p>
+              <p className="text-[11px] text-[#00A86B] font-semibold mt-2 flex items-center gap-1">
+                <span className="w-2 h-2 rounded-full bg-[#00A86B] animate-pulse" />
+                <span>{activeAgentCount} smartphone actif en direct</span>
+              </p>
             </div>
           </div>
 

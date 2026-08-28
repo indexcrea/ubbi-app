@@ -155,3 +155,26 @@ export function saveNewEvent(data: {
 
   return newEvent;
 }
+
+export function deleteStoredEvent(idOrSlug: string): EventItem[] {
+  if (typeof window === "undefined") return MOCK_EVENTS;
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    const customEvents: EventItem[] = raw ? JSON.parse(raw) : [];
+    const updatedCustomEvents = customEvents.filter(
+      (e) => e.id !== idOrSlug && e.slug !== idOrSlug
+    );
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedCustomEvents));
+
+    if (isSupabaseConfigured()) {
+      supabase.from("events").delete().or(`id.eq.${idOrSlug},slug.eq.${idOrSlug}`).then(({ error }) => {
+        if (error) console.error("Supabase delete error:", error);
+      });
+    }
+
+    return getStoredEvents();
+  } catch (e) {
+    console.error("Failed to delete event", e);
+    return getStoredEvents();
+  }
+}

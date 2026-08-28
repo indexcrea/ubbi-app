@@ -6,7 +6,7 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { UbbiLogo } from "@/components/brand/UbbiLogo";
 import { QRScannerModule } from "@/components/access/QRScannerModule";
-import { getStoredEvents } from "@/utils/eventStore";
+import { getStoredEvents, deleteStoredEvent } from "@/utils/eventStore";
 import {
   LayoutDashboard,
   Calendar,
@@ -20,10 +20,23 @@ import {
   Search,
   CheckCircle2,
   Scan,
+  Trash2,
 } from "lucide-react";
 
 export default function OrganizerDashboardPage() {
   const [activeTab, setActiveTab] = useState("overview");
+  const [eventList, setEventList] = useState<any[]>([]);
+
+  React.useEffect(() => {
+    setEventList(getStoredEvents());
+  }, []);
+
+  const handleDeleteEvent = (idOrSlug: string, title: string) => {
+    if (confirm(`Voulez-vous vraiment supprimer définitivement l'événement "${title}" ?`)) {
+      const updated = deleteStoredEvent(idOrSlug);
+      setEventList(updated);
+    }
+  };
 
   return (
     <div className="min-h-screen flex flex-col bg-[#F7F7FA] text-[#111326] antialiased">
@@ -100,7 +113,7 @@ export default function OrganizerDashboardPage() {
           <div className="lg:col-span-9 space-y-6">
             {/* Dynamic KPIs from stored events */}
             {(() => {
-              const myEvents = getStoredEvents();
+              const myEvents = eventList;
               const sold = myEvents.reduce((acc, e) => acc + ((e as any).ticketsSold || 0), 0);
               const capacity = myEvents.reduce((acc, e) => acc + ((e as any).capacity || 500), 500);
               const rev = myEvents.reduce(
@@ -299,7 +312,7 @@ export default function OrganizerDashboardPage() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-[#E2E4ED]">
-                      {getStoredEvents().map((evt) => (
+                      {eventList.map((evt) => (
                         <tr key={evt.id || evt.slug} className="hover:bg-slate-50">
                           <td className="px-4 py-3.5 font-bold">
                             <div>{evt.title}</div>
@@ -314,7 +327,7 @@ export default function OrganizerDashboardPage() {
                               ((evt as any).ticketsSold || 0) * (evt.minPrice || evt.tickets?.[0]?.price || 2000)
                             )} FCFA
                           </td>
-                          <td className="px-4 py-3.5 text-right space-x-2">
+                          <td className="px-4 py-3.5 text-right space-x-2 flex items-center justify-end gap-2">
                             <Link
                               href={`/access-control?event=${evt.slug}`}
                               className="inline-flex items-center gap-1 bg-[#2A1464] hover:bg-[#1E0D4B] text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow-xs transition-colors"
@@ -322,6 +335,15 @@ export default function OrganizerDashboardPage() {
                               <QrCode className="w-3.5 h-3.5 text-[#009FEF]" />
                               <span>Contrôle Porte</span>
                             </Link>
+
+                            <button
+                              onClick={() => handleDeleteEvent(evt.id || evt.slug, evt.title)}
+                              className="inline-flex items-center gap-1 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 text-xs font-bold px-2.5 py-1.5 rounded-lg transition-colors"
+                              title="Supprimer définitivement cet événement"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                              <span>Supprimer</span>
+                            </button>
                           </td>
                         </tr>
                       ))}
