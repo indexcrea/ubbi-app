@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { getStoredEvents, deleteStoredEvent, toggleSuspendEvent } from "@/utils/eventStore";
 import {
   Users,
   Ticket,
@@ -21,12 +22,14 @@ import {
   CheckCircle2,
   Sparkles,
   LogOut,
+  PauseCircle,
+  PlayCircle,
+  Trash2,
 } from "lucide-react";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { supabase, isSupabaseConfigured } from "@/utils/supabaseClient";
 import { getLoggedInUser } from "@/utils/authStore";
-import { getStoredEvents } from "@/utils/eventStore";
 
 export default function AdminDashboardPage() {
   const [activeTab, setActiveTab] = useState<"overview" | "users" | "events" | "finance">("overview");
@@ -38,6 +41,26 @@ export default function AdminDashboardPage() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [adminPinInput, setAdminPinInput] = useState("");
   const [pinError, setPinError] = useState(false);
+  const [adminEvents, setAdminEvents] = useState<any[]>([]);
+
+  useEffect(() => {
+    setAdminEvents(getStoredEvents());
+  }, []);
+
+  const handleAdminDeleteEvent = (idOrSlug: string, title: string) => {
+    if (confirm(`ADMIN: Voulez-vous vraiment supprimer définitivement l'événement "${title}" du site ?`)) {
+      const updated = deleteStoredEvent(idOrSlug);
+      setAdminEvents(updated);
+    }
+  };
+
+  const handleAdminToggleSuspend = (idOrSlug: string, title: string, currentlySuspended: boolean) => {
+    const action = currentlySuspended ? "réactiver" : "suspendre";
+    if (confirm(`ADMIN: Voulez-vous vraiment ${action} l'événement "${title}" ?`)) {
+      const updated = toggleSuspendEvent(idOrSlug);
+      setAdminEvents(updated);
+    }
+  };
 
   useEffect(() => {
     // Check if session has valid founder token
@@ -418,18 +441,26 @@ export default function AdminDashboardPage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {events.map((evt) => {
-                const ticketsSold = (evt as any).ticketsSold || 120;
-                const gross = ((evt as any).price || evt.minPrice || 15000) * ticketsSold;
+              {adminEvents.map((evt) => {
+                const ticketsSold = (evt as any).ticketsSold || 0;
+                const gross = ((evt as any).price || evt.minPrice || 2000) * ticketsSold;
                 const commission = Math.round(gross * 0.035);
+                const isSuspended = !!(evt as any).isSuspended;
 
                 return (
-                  <div key={evt.id} className="border border-[#E2E4ED] rounded-2xl p-5 space-y-4 bg-[#F7F7FA]/50 hover:shadow-md transition-shadow">
+                  <div key={evt.id || evt.slug} className="border border-[#E2E4ED] rounded-2xl p-5 space-y-4 bg-[#F7F7FA]/50 hover:shadow-md transition-shadow relative">
                     <div className="flex items-start justify-between gap-3">
                       <div>
-                        <span className="text-[10px] font-extrabold uppercase tracking-wider bg-[#E5F6FF] text-[#009FEF] px-2 py-0.5 rounded-md">
-                          {evt.category || "Événement"}
-                        </span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] font-extrabold uppercase tracking-wider bg-[#E5F6FF] text-[#009FEF] px-2 py-0.5 rounded-md">
+                            {evt.category || "Événement"}
+                          </span>
+                          {isSuspended && (
+                            <span className="text-[10px] font-extrabold uppercase tracking-wider bg-amber-100 text-amber-800 px-2 py-0.5 rounded-md border border-amber-300">
+                              Suspendu
+                            </span>
+                          )}
+                        </div>
                         <h3 className="font-bold text-[#111326] text-sm mt-1">{evt.title}</h3>
                         <p className="text-xs text-slate-500 flex items-center gap-1 mt-0.5">
                           <Building2 className="w-3 h-3" />
@@ -452,6 +483,39 @@ export default function AdminDashboardPage() {
                     <div className="bg-[#190262] text-white rounded-xl p-3 flex items-center justify-between">
                       <span className="text-xs font-semibold text-slate-200">Commission Ubbi (3,5%)</span>
                       <span className="text-sm font-extrabold text-emerald-400">+{formatFCFA(commission)}</span>
+                    </div>
+
+                    {/* Admin Actions Bar */}
+                    <div className="pt-2 border-t border-[#E2E4ED] flex items-center justify-between gap-2">
+                      <button
+                        onClick={() => handleAdminToggleSuspend(evt.id || evt.slug, evt.title, isSuspended)}
+                        className={`flex-1 inline-flex items-center justify-center gap-1 border text-xs font-bold px-3 py-2 rounded-xl transition-colors ${
+                          isSuspended
+                            ? "bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border-emerald-300"
+                            : "bg-amber-50 hover:bg-amber-100 text-amber-700 border-amber-300"
+                        }`}
+                      >
+                        {isSuspended ? (
+                          <>
+                            <PlayCircle className="w-3.5 h-3.5" />
+                            <span>Réactiver</span>
+                          </>
+                        ) : (
+                          <>
+                            <PauseCircle className="w-3.5 h-3.5" />
+                            <span>Suspendre</span>
+                          </>
+                        )}
+                      </button>
+
+                      <button
+                        onClick={() => handleAdminDeleteEvent(evt.id || evt.slug, evt.title)}
+                        className="inline-flex items-center justify-center gap-1 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 text-xs font-bold px-3 py-2 rounded-xl transition-colors"
+                        title="Supprimer cet événement du site"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        <span>Supprimer</span>
+                      </button>
                     </div>
                   </div>
                 );

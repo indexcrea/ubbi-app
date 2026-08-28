@@ -11,7 +11,7 @@ const AUTH_KEY = "ubbi_logged_user";
 export function getLoggedInUser(): UserProfile | null {
   if (typeof window === "undefined") return null;
   try {
-    const raw = localStorage.getItem(AUTH_KEY);
+    const raw = sessionStorage.getItem(AUTH_KEY);
     return raw ? JSON.parse(raw) : null;
   } catch (e) {
     return null;
@@ -20,12 +20,12 @@ export function getLoggedInUser(): UserProfile | null {
 
 export function loginUser(user: UserProfile): void {
   if (typeof window === "undefined") return;
-  localStorage.setItem(AUTH_KEY, JSON.stringify(user));
+  sessionStorage.setItem(AUTH_KEY, JSON.stringify(user));
 }
 
 export function logoutUser(): void {
   if (typeof window === "undefined") return;
-  localStorage.removeItem(AUTH_KEY);
+  sessionStorage.removeItem(AUTH_KEY);
 }
 
 export function isUserLoggedIn(): boolean {
