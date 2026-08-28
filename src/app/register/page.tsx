@@ -20,6 +20,8 @@ export default function RegisterPage() {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
+  const [emailSentSuccess, setEmailSentSuccess] = useState(false);
+
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -36,6 +38,21 @@ export default function RegisterPage() {
 
     if (isSupabaseConfigured()) {
       try {
+        // Trigger Supabase Auth with Email Confirmation Link
+        const { data: authData, error: authError } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: {
+              first_name: firstName,
+              last_name: lastName,
+              phone: `${countryCode} ${phone}`,
+              role: "organizer",
+            },
+            emailRedirectTo: `${typeof window !== "undefined" ? window.location.origin : ""}/login?confirmed=true`,
+          },
+        });
+
         await supabase.from("profiles").insert([
           {
             email,
@@ -45,6 +62,13 @@ export default function RegisterPage() {
             role: "organizer",
           },
         ]);
+
+        if (authData?.user && !authData?.session) {
+          // Email confirmation is required by Supabase Auth!
+          setEmailSentSuccess(true);
+          setIsLoading(false);
+          return;
+        }
       } catch (err) {
         console.error("Supabase profile save error", err);
       }
@@ -78,12 +102,47 @@ export default function RegisterPage() {
             <X className="w-5 h-5" />
           </Link>
 
-          <div className="text-center mb-5 pr-6 pl-2">
-            <h2 className="text-2xl font-extrabold text-[#111326]">Créer un compte</h2>
-            <p className="mt-1 text-xs text-[#666A80]">
-              Rejoignez Ubbi pour créer, gérer et suivre vos événements au Sénégal.
-            </p>
-          </div>
+          {emailSentSuccess ? (
+            <div className="text-center py-2 space-y-4">
+              <div className="w-16 h-16 bg-[#E5F6FF] text-[#009FEF] rounded-2xl flex items-center justify-center mx-auto shadow-inner border border-[#009FEF]/20">
+                <Mail className="w-8 h-8 animate-bounce" />
+              </div>
+              <div className="space-y-1">
+                <span className="bg-[#E5F6FF] text-[#009FEF] text-[10px] font-extrabold uppercase px-3 py-1 rounded-full border border-[#009FEF]/20">
+                  Validation par Email Requise
+                </span>
+                <h2 className="text-2xl font-extrabold text-[#111326] pt-1">
+                  Lien de confirmation envoyé ! 📧
+                </h2>
+                <p className="text-xs text-[#666A80] leading-relaxed pt-1">
+                  Un email de validation avec lien d'activation sécurisé a été envoyé à <strong>{email}</strong>. Cliquez sur ce lien dans votre boîte mail pour valider définitivement la création de votre compte organisateur.
+                </p>
+              </div>
+
+              <div className="pt-4 border-t border-[#E2E4ED] space-y-2">
+                <Link
+                  href="/login"
+                  className="w-full bg-[#2A1464] hover:bg-[#1F0D4F] text-white font-extrabold py-3.5 rounded-xl shadow-md block text-xs transition-all"
+                >
+                  Aller à la page de connexion
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => setEmailSentSuccess(false)}
+                  className="text-xs text-[#009FEF] font-bold hover:underline block mx-auto pt-1"
+                >
+                  Renseigner un autre email
+                </button>
+              </div>
+            </div>
+          ) : (
+            <>
+              <div className="text-center mb-5 pr-6 pl-2">
+                <h2 className="text-2xl font-extrabold text-[#111326]">Créer un compte</h2>
+                <p className="mt-1 text-xs text-[#666A80]">
+                  Rejoignez Ubbi pour créer, gérer et suivre vos événements au Sénégal.
+                </p>
+              </div>
 
           <form onSubmit={handleRegister} className="space-y-4">
             {/* Prénom & Nom */}
@@ -195,6 +254,8 @@ export default function RegisterPage() {
               Se connecter
             </Link>
           </div>
+            </>
+          )}
         </div>
       </div>
     </div>
