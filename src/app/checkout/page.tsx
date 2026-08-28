@@ -49,10 +49,20 @@ function CheckoutContent() {
 
   const [isProcessing, setIsProcessing] = useState(false);
   const [isConfirmed, setIsConfirmed] = useState(false);
+  const [validationError, setValidationError] = useState<string | null>(null);
 
   const subtotal = ticketTier.price * qtyParam;
   const serviceFee = Math.round(subtotal * 0.035); // 3.5% fee
   const total = subtotal + serviceFee;
+
+  const handleGoToPayment = () => {
+    if (!formData.fullName.trim() || !formData.phone.trim()) {
+      setValidationError("Veuillez remplir votre Nom & Prénom ainsi que votre Numéro WhatsApp pour continuer.");
+      return;
+    }
+    setValidationError(null);
+    setStep(3);
+  };
 
   const handlePay = () => {
     setIsProcessing(true);
@@ -78,10 +88,6 @@ function CheckoutContent() {
           <h1 className="text-2xl sm:text-3xl font-extrabold text-[#111326]">
             Achat de votre billet Ubbi
           </h1>
-          <p className="text-xs text-[#009FEF] font-semibold mt-1 flex items-center gap-1.5">
-            <ShieldCheck className="w-4 h-4 text-[#009FEF]" />
-            Achat direct sans création de compte — Billet QR envoyé immédiatement par Email &amp; WhatsApp.
-          </p>
 
           {/* Steps Progress Bar */}
           <div className="grid grid-cols-4 gap-2 mt-6">
@@ -149,54 +155,48 @@ function CheckoutContent() {
                   2. Coordonnées du participant
                 </h3>
 
+                {validationError && (
+                  <div className="p-3.5 bg-red-50 border border-red-200 text-red-600 font-bold text-xs rounded-xl flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-red-500 animate-ping" />
+                    <span>{validationError}</span>
+                  </div>
+                )}
+
                 <div className="space-y-4 text-sm">
                   <div>
                     <label className="block text-xs font-semibold text-[#666A80] mb-1">
-                      Nom &amp; Prénom
+                      Nom &amp; Prénom *
                     </label>
                     <div className="relative">
                       <User className="w-4 h-4 text-[#666A80] absolute left-3.5 top-1/2 -translate-y-1/2" />
                       <input
                         type="text"
+                        placeholder="Entrez votre Nom et Prénom..."
                         value={formData.fullName}
-                        onChange={(e) =>
-                          setFormData({ ...formData, fullName: e.target.value })
-                        }
-                        className="w-full bg-[#F7F7FA] border border-[#E2E4ED] rounded-xl pl-10 pr-4 py-2.5 text-[#111326] font-medium"
+                        onChange={(e) => {
+                          setValidationError(null);
+                          setFormData({ ...formData, fullName: e.target.value });
+                        }}
+                        className="w-full bg-[#F7F7FA] border border-[#E2E4ED] focus:border-[#009FEF] rounded-xl pl-10 pr-4 py-2.5 text-[#111326] font-medium outline-none"
                       />
                     </div>
                   </div>
 
                   <div>
                     <label className="block text-xs font-semibold text-[#666A80] mb-1">
-                      Adresse Email (Pour recevoir votre billet QR)
-                    </label>
-                    <div className="relative">
-                      <Mail className="w-4 h-4 text-[#666A80] absolute left-3.5 top-1/2 -translate-y-1/2" />
-                      <input
-                        type="email"
-                        value={formData.email}
-                        onChange={(e) =>
-                          setFormData({ ...formData, email: e.target.value })
-                        }
-                        className="w-full bg-[#F7F7FA] border border-[#E2E4ED] rounded-xl pl-10 pr-4 py-2.5 text-[#111326] font-medium"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-semibold text-[#666A80] mb-1">
-                      Numéro de téléphone WhatsApp
+                      Numéro de téléphone WhatsApp *
                     </label>
                     <div className="relative">
                       <Phone className="w-4 h-4 text-[#666A80] absolute left-3.5 top-1/2 -translate-y-1/2" />
                       <input
-                        type="text"
+                        type="tel"
+                        placeholder="Ex: +221 77 000 00 00"
                         value={formData.phone}
-                        onChange={(e) =>
-                          setFormData({ ...formData, phone: e.target.value })
-                        }
-                        className="w-full bg-[#F7F7FA] border border-[#E2E4ED] rounded-xl pl-10 pr-4 py-2.5 text-[#111326] font-medium"
+                        onChange={(e) => {
+                          setValidationError(null);
+                          setFormData({ ...formData, phone: e.target.value });
+                        }}
+                        className="w-full bg-[#F7F7FA] border border-[#E2E4ED] focus:border-[#009FEF] rounded-xl pl-10 pr-4 py-2.5 text-[#111326] font-medium outline-none"
                       />
                     </div>
                   </div>
@@ -210,8 +210,8 @@ function CheckoutContent() {
                     Retour
                   </button>
                   <button
-                    onClick={() => setStep(3)}
-                    className="w-2/3 bg-[#009FEF] text-white font-bold py-3.5 rounded-xl shadow-md flex items-center justify-center gap-2 text-sm"
+                    onClick={handleGoToPayment}
+                    className="w-2/3 bg-[#009FEF] hover:bg-[#0084C9] text-white font-bold py-3.5 rounded-xl shadow-md flex items-center justify-center gap-2 text-sm transition-all"
                   >
                     <span>Passer au paiement</span>
                     <ArrowRight className="w-4 h-4" />
@@ -331,7 +331,7 @@ function CheckoutContent() {
                 </div>
                 <h3 className="text-2xl font-extrabold text-[#111326]">Paiement Réussi !</h3>
                 <p className="text-sm text-[#666A80] max-w-md mx-auto">
-                  Votre billet digital Ubbi a été généré et envoyé à l'adresse <strong>{formData.email}</strong>.
+                  Votre billet digital Ubbi a été généré avec succès et envoyé sur votre WhatsApp au <strong>{formData.phone}</strong>.
                 </p>
                 <div className="pt-4">
                   <Link
