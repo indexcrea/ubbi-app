@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Mail, Lock, ArrowRight, X, Sparkles, CheckCircle2 } from "lucide-react";
+import { Mail, Lock, ArrowRight, X, ShieldCheck, CheckCircle2, KeyRound } from "lucide-react";
 import { LandingPageBackdrop } from "@/components/layout/LandingPageBackdrop";
 import { supabase, isSupabaseConfigured } from "@/utils/supabaseClient";
 import { loginUser } from "@/utils/authStore";
@@ -12,8 +12,11 @@ export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [magicLinkSent, setMagicLinkSent] = useState(false);
-  const [isSendingMagicLink, setIsSendingMagicLink] = useState(false);
+
+  // Forgot Password States
+  const [isForgotPasswordMode, setIsForgotPasswordMode] = useState(false);
+  const [resetEmailSent, setResetEmailSent] = useState(false);
+  const [isSendingReset, setIsSendingReset] = useState(false);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,28 +32,23 @@ export default function LoginPage() {
     router.push(redirectUrl);
   };
 
-  const handleSendMagicLink = async () => {
-    if (!email) {
-      alert("Veuillez saisir votre adresse email.");
-      return;
-    }
-    setIsSendingMagicLink(true);
+  const handleSendPasswordReset = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email) return;
 
+    setIsSendingReset(true);
     if (isSupabaseConfigured()) {
       try {
-        await supabase.auth.signInWithOtp({
-          email,
-          options: {
-            emailRedirectTo: `${typeof window !== "undefined" ? window.location.origin : ""}/dashboard/organizer`,
-          },
+        await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: `${typeof window !== "undefined" ? window.location.origin : ""}/login?reset=true`,
         });
       } catch (err) {
-        console.error("Magic link error", err);
+        console.error("Password reset email error", err);
       }
     }
 
-    setMagicLinkSent(true);
-    setIsSendingMagicLink(false);
+    setIsSendingReset(false);
+    setResetEmailSent(true);
   };
 
   return (
@@ -73,84 +71,139 @@ export default function LoginPage() {
             <X className="w-5 h-5" />
           </Link>
 
-          <div className="text-center mb-5 pr-6 pl-2">
-            <h2 className="text-2xl font-extrabold text-[#111326]">Connexion</h2>
-            <p className="mt-1 text-xs text-[#666A80]">
-              Connectez-vous pour accéder à votre espace Ubbi.
-            </p>
-          </div>
+          {/* MODE RÉINITIALISATION DE MOT DE PASSE OUBLIÉ */}
+          {isForgotPasswordMode ? (
+            <div className="space-y-4">
+              <div className="text-center mb-4 pr-6 pl-2">
+                <div className="w-14 h-14 bg-[#E5F6FF] text-[#009FEF] rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-inner border border-[#009FEF]/20">
+                  <KeyRound className="w-7 h-7" />
+                </div>
+                <h2 className="text-xl font-extrabold text-[#111326]">Réinitialisation de Mot de Passe</h2>
+                <p className="mt-1 text-xs text-[#666A80]">
+                  Saisissez l'adresse email de votre compte. Nous vous enverrons un lien sécurisé pour choisir un nouveau mot de passe.
+                </p>
+              </div>
 
-          {magicLinkSent ? (
-            <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 text-center space-y-2 mb-4">
-              <CheckCircle2 className="w-8 h-8 text-emerald-600 mx-auto" />
-              <h3 className="font-extrabold text-sm text-emerald-900">Lien Magique envoyé ! 🪄</h3>
-              <p className="text-xs text-emerald-700 leading-relaxed">
-                Vérifiez votre boîte mail <strong>{email}</strong> et cliquez sur le lien magique reçu pour vous connecter sans mot de passe.
-              </p>
-              <button
-                onClick={() => setMagicLinkSent(false)}
-                className="text-xs text-[#009FEF] font-bold hover:underline block mx-auto pt-1"
-              >
-                Retour à la connexion par mot de passe
-              </button>
+              {resetEmailSent ? (
+                <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 text-center space-y-2 my-4">
+                  <CheckCircle2 className="w-8 h-8 text-emerald-600 mx-auto" />
+                  <h3 className="font-extrabold text-sm text-emerald-900">Email de réinitialisation envoyé ! 📩</h3>
+                  <p className="text-xs text-emerald-700 leading-relaxed">
+                    Un lien sécurisé a été envoyé à <strong>{email}</strong>. Ouvrez votre boîte mail et cliquez sur le lien pour créer votre nouveau mot de passe.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsForgotPasswordMode(false);
+                      setResetEmailSent(false);
+                    }}
+                    className="text-xs text-[#2A1464] font-extrabold hover:underline block mx-auto pt-2"
+                  >
+                    ← Retourner à la connexion
+                  </button>
+                </div>
+              ) : (
+                <form onSubmit={handleSendPasswordReset} className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-[#666A80] mb-1">
+                      Votre Adresse Email *
+                    </label>
+                    <div className="relative">
+                      <Mail className="w-4 h-4 text-[#666A80] absolute left-3.5 top-1/2 -translate-y-1/2" />
+                      <input
+                        type="email"
+                        required
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="exemple@domaine.sn"
+                        className="w-full bg-[#F7F7FA] border border-[#E2E4ED] focus:border-[#009FEF] focus:bg-white rounded-xl pl-10 pr-4 py-2.5 text-sm font-medium transition-colors outline-none"
+                        autoFocus
+                      />
+                    </div>
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={isSendingReset}
+                    className="w-full bg-[#009FEF] hover:bg-[#0084C9] text-white font-extrabold py-3.5 rounded-xl shadow-lg flex items-center justify-center gap-2 text-sm transition-all"
+                  >
+                    <ShieldCheck className="w-4 h-4 text-white" />
+                    <span>{isSendingReset ? "Envoi du lien..." : "Envoyer le lien de réinitialisation 🔒"}</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setIsForgotPasswordMode(false)}
+                    className="text-xs text-[#666A80] hover:text-[#111326] font-semibold block mx-auto pt-1"
+                  >
+                    ← Annuler et revenir à la connexion
+                  </button>
+                </form>
+              )}
             </div>
           ) : (
-            <form onSubmit={handleLogin} className="space-y-4">
-              <div>
-                <label className="block text-xs font-semibold text-[#666A80] mb-1">
-                  Adresse Email *
-                </label>
-                <div className="relative">
-                  <Mail className="w-4 h-4 text-[#666A80] absolute left-3.5 top-1/2 -translate-y-1/2" />
-                  <input
-                    type="email"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="exemple@domaine.sn"
-                    className="w-full bg-[#F7F7FA] border border-[#E2E4ED] focus:border-[#009FEF] focus:bg-white rounded-xl pl-10 pr-4 py-2.5 text-sm font-medium transition-colors outline-none"
-                  />
-                </div>
+            /* MODE CONNEXION CLASSIQUE AVEC MOT DE PASSE */
+            <>
+              <div className="text-center mb-5 pr-6 pl-2">
+                <h2 className="text-2xl font-extrabold text-[#111326]">Connexion</h2>
+                <p className="mt-1 text-xs text-[#666A80]">
+                  Connectez-vous pour accéder à votre espace Ubbi.
+                </p>
               </div>
 
-              <div>
-                <label className="block text-xs font-semibold text-[#666A80] mb-1">
-                  Mot de passe *
-                </label>
-                <div className="relative">
-                  <Lock className="w-4 h-4 text-[#666A80] absolute left-3.5 top-1/2 -translate-y-1/2" />
-                  <input
-                    type="password"
-                    required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••"
-                    className="w-full bg-[#F7F7FA] border border-[#E2E4ED] focus:border-[#009FEF] focus:bg-white rounded-xl pl-10 pr-4 py-2.5 text-sm font-medium transition-colors outline-none"
-                  />
+              <form onSubmit={handleLogin} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-semibold text-[#666A80] mb-1">
+                    Adresse Email *
+                  </label>
+                  <div className="relative">
+                    <Mail className="w-4 h-4 text-[#666A80] absolute left-3.5 top-1/2 -translate-y-1/2" />
+                    <input
+                      type="email"
+                      required
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="exemple@domaine.sn"
+                      className="w-full bg-[#F7F7FA] border border-[#E2E4ED] focus:border-[#009FEF] focus:bg-white rounded-xl pl-10 pr-4 py-2.5 text-sm font-medium transition-colors outline-none"
+                    />
+                  </div>
                 </div>
-              </div>
 
-              <button
-                type="submit"
-                className="w-full bg-[#2A1464] hover:bg-[#1F0D4F] text-white font-extrabold py-3.5 rounded-xl shadow-lg flex items-center justify-center gap-2 text-sm transition-all mt-2"
-              >
-                <span>Se connecter</span>
-                <ArrowRight className="w-4 h-4 text-[#009FEF]" />
-              </button>
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-xs font-semibold text-[#666A80]">
+                      Mot de passe *
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => setIsForgotPasswordMode(true)}
+                      className="text-[11px] font-bold text-[#009FEF] hover:underline"
+                    >
+                      Mot de passe oublié ?
+                    </button>
+                  </div>
+                  <div className="relative">
+                    <Lock className="w-4 h-4 text-[#666A80] absolute left-3.5 top-1/2 -translate-y-1/2" />
+                    <input
+                      type="password"
+                      required
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="••••••••"
+                      className="w-full bg-[#F7F7FA] border border-[#E2E4ED] focus:border-[#009FEF] focus:bg-white rounded-xl pl-10 pr-4 py-2.5 text-sm font-medium transition-colors outline-none"
+                    />
+                  </div>
+                </div>
 
-              {/* Option Connexion Magic Link Sans Mot de Passe */}
-              <div className="pt-2">
                 <button
-                  type="button"
-                  onClick={handleSendMagicLink}
-                  disabled={isSendingMagicLink}
-                  className="w-full bg-[#E5F6FF] hover:bg-[#D4F0FF] text-[#009FEF] border border-[#009FEF]/30 font-extrabold py-2.5 rounded-xl text-xs transition-all flex items-center justify-center gap-1.5"
+                  type="submit"
+                  className="w-full bg-[#2A1464] hover:bg-[#1F0D4F] text-white font-extrabold py-3.5 rounded-xl shadow-lg flex items-center justify-center gap-2 text-sm transition-all mt-2"
                 >
-                  <Sparkles className="w-3.5 h-3.5" />
-                  <span>{isSendingMagicLink ? "Envoi du lien magique..." : "🪄 Connexion par Lien Magique (Magic Link sans mot de passe)"}</span>
+                  <span>Se connecter</span>
+                  <ArrowRight className="w-4 h-4 text-[#009FEF]" />
                 </button>
-              </div>
-            </form>
+              </form>
+            </>
           )}
 
           <div className="mt-6 pt-4 border-t border-[#E2E4ED] text-center text-xs text-[#666A80]">

@@ -34,12 +34,10 @@ export default function RegisterPage() {
       role: "organizer" as const,
     };
 
-    loginUser(userProfile);
-
     if (isSupabaseConfigured()) {
       try {
         // Trigger Supabase Auth with Email Confirmation Link
-        const { data: authData, error: authError } = await supabase.auth.signUp({
+        await supabase.auth.signUp({
           email,
           password,
           options: {
@@ -62,24 +60,13 @@ export default function RegisterPage() {
             role: "organizer",
           },
         ]);
-
-        if (authData?.user && !authData?.session) {
-          // Email confirmation is required by Supabase Auth!
-          setEmailSentSuccess(true);
-          setIsLoading(false);
-          return;
-        }
       } catch (err) {
         console.error("Supabase profile save error", err);
       }
     }
 
     setIsLoading(false);
-    
-    // Check if redirect query param exists
-    const searchParams = new URLSearchParams(window.location.search);
-    const redirectUrl = searchParams.get("redirect") || "/organizers/create";
-    router.push(redirectUrl);
+    setEmailSentSuccess(true);
   };
 
   return (
