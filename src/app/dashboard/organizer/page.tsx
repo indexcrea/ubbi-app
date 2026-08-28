@@ -28,6 +28,7 @@ import {
 export default function OrganizerDashboardPage() {
   const [activeTab, setActiveTab] = useState("overview");
   const [eventList, setEventList] = useState<any[]>([]);
+  const [overviewFilterSlug, setOverviewFilterSlug] = useState<string>("ALL");
 
   React.useEffect(() => {
     setEventList(getStoredEvents());
@@ -71,14 +72,6 @@ export default function OrganizerDashboardPage() {
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
-            <button
-              onClick={() => setActiveTab("access")}
-              className="bg-[#2A1464] hover:bg-[#1E0D4B] text-white font-extrabold text-xs sm:text-sm px-4 py-3 rounded-xl shadow-md flex items-center gap-2 transition-all"
-            >
-              <QrCode className="w-4 h-4 text-[#009FEF]" />
-              <span>Démarrer le Scanner de Porte</span>
-            </button>
-
             <Link
               href="/organizers/create"
               className="bg-[#009FEF] hover:bg-[#0084C9] text-white font-extrabold text-xs sm:text-sm px-5 py-3 rounded-xl shadow-md flex items-center gap-2 transition-all"
@@ -123,7 +116,10 @@ export default function OrganizerDashboardPage() {
           <div className="lg:col-span-9 space-y-6">
             {/* Dynamic KPIs from stored events */}
             {(() => {
-              const myEvents = eventList;
+              const myEvents = overviewFilterSlug === "ALL" 
+                ? eventList 
+                : eventList.filter((e) => e.slug === overviewFilterSlug || e.id === overviewFilterSlug);
+              
               const sold = myEvents.reduce((acc, e) => acc + ((e as any).ticketsSold || 0), 0);
               const capacity = myEvents.reduce((acc, e) => acc + ((e as any).capacity || 500), 500);
               const rev = myEvents.reduce(
@@ -131,62 +127,96 @@ export default function OrganizerDashboardPage() {
                 0
               );
               return (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                  {/* Card 1 */}
-                  <div className="ubbi-card p-5 bg-white rounded-2xl border border-[#E2E4ED] space-y-2">
-                    <span className="text-xs font-semibold text-[#666A80] uppercase tracking-wider block">
-                      Billets vendus
-                    </span>
-                    <div className="flex items-baseline justify-between">
-                      <span className="text-2xl font-extrabold text-[#111326]">{sold}</span>
-                      <span className="text-xs text-[#666A80]">/ {capacity}</span>
-                    </div>
-                    <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-                      <div
-                        className="bg-[#009FEF] h-full rounded-full transition-all"
-                        style={{ width: `${Math.min(100, (sold / Math.max(1, capacity)) * 100)}%` }}
-                      />
-                    </div>
-                  </div>
+                <div className="space-y-4">
+                  {/* Dropdown Filter Selector for Vue d'ensemble */}
+                  {eventList.length > 1 && activeTab === "overview" && (
+                    <div className="bg-white rounded-2xl p-4 border border-[#E2E4ED] shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <div>
+                        <h2 className="text-sm font-extrabold text-[#111326]">
+                          Filtre d'Affichage Événement
+                        </h2>
+                        <p className="text-xs text-[#666A80]">
+                          Sélectionnez un événement pour isoler ses ventes et métriques.
+                        </p>
+                      </div>
 
-                  {/* Card 2 */}
-                  <div className="ubbi-card p-5 bg-white rounded-2xl border border-[#E2E4ED] space-y-2">
-                    <span className="text-xs font-semibold text-[#666A80] uppercase tracking-wider block">
-                      Chiffre d'affaires
-                    </span>
-                    <div className="flex items-baseline justify-between">
-                      <span className="text-xl font-extrabold text-[#2A1464]">
-                        {new Intl.NumberFormat("fr-FR").format(rev)} FCFA
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-semibold text-[#666A80]">Événement :</span>
+                        <select
+                          value={overviewFilterSlug}
+                          onChange={(e) => setOverviewFilterSlug(e.target.value)}
+                          className="bg-[#F7F7FA] border border-[#E2E4ED] text-xs font-extrabold text-[#111326] px-3.5 py-2 rounded-xl outline-none focus:border-[#009FEF] cursor-pointer"
+                        >
+                          <option value="ALL">Tous mes événements ({eventList.length})</option>
+                          {eventList.map((evt) => (
+                            <option key={evt.id || evt.slug} value={evt.slug}>
+                              {evt.title}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {/* Card 1 */}
+                    <div className="ubbi-card p-5 bg-white rounded-2xl border border-[#E2E4ED] space-y-2">
+                      <span className="text-xs font-semibold text-[#666A80] uppercase tracking-wider block">
+                        Billets vendus
+                      </span>
+                      <div className="flex items-baseline justify-between">
+                        <span className="text-2xl font-extrabold text-[#111326]">{sold}</span>
+                        <span className="text-xs text-[#666A80]">/ {capacity}</span>
+                      </div>
+                      <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                        <div
+                          className="bg-[#009FEF] h-full rounded-full transition-all"
+                          style={{ width: `${Math.min(100, (sold / Math.max(1, capacity)) * 100)}%` }}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Card 2 */}
+                    <div className="ubbi-card p-5 bg-white rounded-2xl border border-[#E2E4ED] space-y-2">
+                      <span className="text-xs font-semibold text-[#666A80] uppercase tracking-wider block">
+                        Chiffre d'affaires
+                      </span>
+                      <div className="flex items-baseline justify-between">
+                        <span className="text-xl font-extrabold text-[#2A1464]">
+                          {new Intl.NumberFormat("fr-FR").format(rev)} FCFA
+                        </span>
+                      </div>
+                      <span className="text-xs text-emerald-600 font-semibold flex items-center gap-1">
+                        <TrendingUp className="w-3.5 h-3.5" /> Synchronisé en direct
                       </span>
                     </div>
-                    <span className="text-xs text-emerald-600 font-semibold flex items-center gap-1">
-                      <TrendingUp className="w-3.5 h-3.5" /> Synchronisé en direct
-                    </span>
-                  </div>
 
-                  {/* Card 3 */}
-                  <div className="ubbi-card p-5 bg-white rounded-2xl border border-[#E2E4ED] space-y-2">
-                    <span className="text-xs font-semibold text-[#666A80] uppercase tracking-wider block">
-                      Événements créés
-                    </span>
-                    <div className="flex items-baseline justify-between">
-                      <span className="text-2xl font-extrabold text-[#111326]">{myEvents.length}</span>
-                      <span className="text-xs text-[#009FEF] font-bold">Actifs sur Ubbi</span>
+                    {/* Card 3 */}
+                    <div className="ubbi-card p-5 bg-white rounded-2xl border border-[#E2E4ED] space-y-2">
+                      <span className="text-xs font-semibold text-[#666A80] uppercase tracking-wider block">
+                        Événements créés
+                      </span>
+                      <div className="flex items-baseline justify-between">
+                        <span className="text-2xl font-extrabold text-[#111326]">
+                          {overviewFilterSlug === "ALL" ? eventList.length : 1}
+                        </span>
+                        <span className="text-xs text-[#009FEF] font-bold">Actifs sur Ubbi</span>
+                      </div>
+                      <span className="text-[11px] text-[#666A80]">Billetterie disponible</span>
                     </div>
-                    <span className="text-[11px] text-[#666A80]">Billetterie disponible</span>
-                  </div>
 
-                  {/* Card 4 */}
-                  <div className="ubbi-card p-5 bg-white rounded-2xl border border-[#E2E4ED] space-y-2">
-                    <span className="text-xs font-semibold text-[#666A80] uppercase tracking-wider block">
-                      Taux d'émission
-                    </span>
-                    <div className="flex items-baseline justify-between">
-                      <span className="text-2xl font-extrabold text-[#009FEF]">100%</span>
+                    {/* Card 4 */}
+                    <div className="ubbi-card p-5 bg-white rounded-2xl border border-[#E2E4ED] space-y-2">
+                      <span className="text-xs font-semibold text-[#666A80] uppercase tracking-wider block">
+                        Taux d'émission
+                      </span>
+                      <div className="flex items-baseline justify-between">
+                        <span className="text-2xl font-extrabold text-[#009FEF]">100%</span>
+                      </div>
+                      <span className="text-[11px] text-emerald-600 font-semibold">
+                        Commissions Ubbi à 3,5%
+                      </span>
                     </div>
-                    <span className="text-[11px] text-emerald-600 font-semibold">
-                      Commissions Ubbi à 3,5%
-                    </span>
                   </div>
                 </div>
               );

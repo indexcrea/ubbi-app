@@ -208,21 +208,42 @@ export function QRScannerModule() {
 
   return (
     <div className="space-y-6">
-      {/* 1. Header Control Bar & Lock Switch */}
+      {/* 1. Header Control Bar & Event Selector */}
       <div className="bg-white rounded-3xl p-6 shadow-xl border border-white/60 flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
           <span className="text-[10px] font-extrabold text-[#009FEF] uppercase tracking-widest bg-[#E5F6FF] px-2.5 py-1 rounded-md border border-[#009FEF]/20">
             MODULE WEB DE CONTRÔLE PORTE
           </span>
           <h2 className="text-xl sm:text-2xl font-extrabold text-[#111326] mt-2">
-            {events.find((e) => e.slug === selectedEventSlug)?.title || "Sélectionnez un événement"}
+            {selectedEvent ? selectedEvent.title : "Sélectionnez un événement"}
           </h2>
           <p className="text-xs text-[#666A80] mt-1">
             Validez les entrées depuis votre smartphone ou partagez le lien sécurisé avec vos contrôleurs.
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
+          {/* Dropdown Event Selector if multiple events */}
+          {events.length > 1 && (
+            <div className="flex items-center gap-2 bg-[#F7F7FA] p-1.5 px-3 rounded-xl border border-[#E2E4ED]">
+              <span className="text-xs font-bold text-[#666A80]">Événement :</span>
+              <select
+                value={selectedEventSlug}
+                onChange={(e) => {
+                  setSelectedEventSlug(e.target.value);
+                  setIsScannerStarted(false);
+                }}
+                className="bg-transparent text-xs font-extrabold text-[#2A1464] outline-none cursor-pointer pr-1"
+              >
+                {events.map((evt) => (
+                  <option key={evt.id || evt.slug} value={evt.slug}>
+                    {evt.title}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
           {/* Lock / Unlock Toggle Button */}
           <button
             onClick={toggleLockState}
@@ -255,9 +276,12 @@ export function QRScannerModule() {
             <QrCode className="w-10 h-10" />
           </div>
           <div className="max-w-md mx-auto space-y-2">
+            <span className="bg-[#009FEF]/20 text-[#009FEF] text-[10px] font-extrabold uppercase px-3 py-1 rounded-full border border-[#009FEF]/30 inline-block">
+              {selectedEvent ? selectedEvent.title : "Scanner Ubbi"}
+            </span>
             <h3 className="text-2xl font-extrabold text-white">Prêt pour le Contrôle d'Accès Porte</h3>
             <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
-              Cliquez ci-dessous pour démarrer le scanner et activer le viseur caméra smartphone en direct.
+              Cliquez ci-dessous pour démarrer le scanner et activer le viseur caméra smartphone en direct pour <strong>{selectedEvent?.title}</strong>.
             </p>
           </div>
           <button
