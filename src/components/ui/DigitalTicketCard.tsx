@@ -110,33 +110,21 @@ export const DigitalTicketCard: React.FC<DigitalTicketCardProps> = ({
 
         {/* Détails du Billet */}
         <div className="p-6 space-y-5">
-          <div className="grid grid-cols-2 gap-4 text-xs">
+          <div className="grid grid-cols-3 gap-3 text-xs">
             <div>
-              <span className="text-[#666A80] block text-[10px] uppercase font-semibold tracking-wider">Titulaire du billet</span>
-              <span className="font-bold text-[#111326] text-sm">{attendeeName}</span>
-            </div>
-            <div>
-              <span className="text-[#666A80] block text-[10px] uppercase font-semibold tracking-wider">Statut d'accès</span>
-              {status.toUpperCase().includes("VALIDE") || status.toUpperCase().includes("UTILISÉ") ? (
-                <span className="inline-flex items-center gap-1 font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
-                  <CheckCircle2 className="w-3.5 h-3.5" />
-                  SCANNÉ / VALIDÉ
-                </span>
-              ) : (
-                <span className="inline-flex items-center gap-1 font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md border border-slate-200">
-                  NON SCANNÉ
-                </span>
-              )}
+              <span className="text-[#666A80] block text-[10px] uppercase font-semibold tracking-wider">Titulaire</span>
+              <span className="font-bold text-[#111326] text-xs sm:text-sm truncate block">{attendeeName}</span>
             </div>
 
             <div>
               <span className="text-[#666A80] block text-[10px] uppercase font-semibold tracking-wider">Date &amp; Heure</span>
-              <span className="font-bold text-[#111326]">{date}</span>
-              <span className="text-[#666A80] block text-[11px]">{time}</span>
+              <span className="font-bold text-[#111326] block text-xs">{date}</span>
+              <span className="text-[#666A80] text-[11px] font-medium">{time}</span>
             </div>
+
             <div>
               <span className="text-[#666A80] block text-[10px] uppercase font-semibold tracking-wider">Lieu</span>
-              <span className="font-bold text-[#111326] truncate block">{venue}</span>
+              <span className="font-bold text-[#111326] text-xs truncate block">{venue}</span>
             </div>
           </div>
 

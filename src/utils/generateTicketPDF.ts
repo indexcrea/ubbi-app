@@ -128,75 +128,48 @@ export async function generateTicketPDF(
     pdf.text(data.ticketNumber, cardX + (cardWidth / 2), perfY + 1, { align: "center" });
 
     // =========================================================
-    // TICKET DETAILS GRID
+    // TICKET DETAILS GRID (3 Columns: Titulaire, Date & Heure, Lieu)
     // =========================================================
     const gridY = perfY + 10;
 
-    // Titulaire du Billet
+    // Col 1: Titulaire du Billet
     pdf.setTextColor(102, 106, 128);
     pdf.setFontSize(7.5);
     pdf.setFont("helvetica", "bold");
-    pdf.text("TITULAIRE DU BILLET", cardX + 10, gridY);
+    pdf.text("TITULAIRE", cardX + 10, gridY);
     pdf.setTextColor(17, 19, 38);
-    pdf.setFontSize(10);
+    pdf.setFontSize(9.5);
     pdf.setFont("helvetica", "bold");
     pdf.text(data.attendeeName || "Amadou Diallo", cardX + 10, gridY + 5);
 
-    // Statut d'accès (Initial: NON SCANNÉ)
-    const currentStatus = data.status || "NON SCANNE";
-    const isScanned = currentStatus.toUpperCase().includes("VALIDE") || currentStatus.toUpperCase().includes("UTILISE");
-
+    // Col 2: Date & Heure
     pdf.setTextColor(102, 106, 128);
     pdf.setFontSize(7.5);
     pdf.setFont("helvetica", "bold");
-    pdf.text("STATUT D'ACCES", cardX + 80, gridY);
-
-    if (isScanned) {
-      pdf.setFillColor(236, 253, 245); // emerald-50
-      pdf.setDrawColor(167, 243, 208); // emerald-200
-      pdf.roundedRect(cardX + 80, gridY + 1.5, 28, 5.5, 1.5, 1.5, "FD");
-      pdf.setTextColor(5, 150, 105); // emerald-600
-      pdf.setFontSize(7);
-      pdf.setFont("helvetica", "bold");
-      pdf.text("SCANNE / VALIDE", cardX + 94, gridY + 5.2, { align: "center" });
-    } else {
-      pdf.setFillColor(241, 245, 249); // slate-100
-      pdf.setDrawColor(226, 228, 237); // slate-200
-      pdf.roundedRect(cardX + 80, gridY + 1.5, 26, 5.5, 1.5, 1.5, "FD");
-      pdf.setTextColor(100, 116, 139); // slate-500
-      pdf.setFontSize(7);
-      pdf.setFont("helvetica", "bold");
-      pdf.text("NON SCANNE", cardX + 93, gridY + 5.2, { align: "center" });
-    }
-
-    // Date & Heure
-    pdf.setTextColor(102, 106, 128);
-    pdf.setFontSize(7.5);
-    pdf.setFont("helvetica", "bold");
-    pdf.text("DATE & HEURE", cardX + 10, gridY + 14);
+    pdf.text("DATE & HEURE", cardX + 55, gridY);
     pdf.setTextColor(17, 19, 38);
-    pdf.setFontSize(9.5);
+    pdf.setFontSize(9);
     pdf.setFont("helvetica", "bold");
-    pdf.text(data.date, cardX + 10, gridY + 19);
+    pdf.text(data.date, cardX + 55, gridY + 5);
     pdf.setTextColor(102, 106, 128);
     pdf.setFontSize(8);
     pdf.setFont("helvetica", "normal");
-    pdf.text(data.time, cardX + 10, gridY + 23.5);
+    pdf.text(data.time, cardX + 55, gridY + 9);
 
-    // Lieu
+    // Col 3: Lieu
     pdf.setTextColor(102, 106, 128);
     pdf.setFontSize(7.5);
     pdf.setFont("helvetica", "bold");
-    pdf.text("LIEU", cardX + 80, gridY + 14);
+    pdf.text("LIEU", cardX + 100, gridY);
     pdf.setTextColor(17, 19, 38);
-    pdf.setFontSize(9.5);
+    pdf.setFontSize(9);
     pdf.setFont("helvetica", "bold");
-    pdf.text(data.venue, cardX + 80, gridY + 19);
+    pdf.text(data.venue, cardX + 100, gridY + 5);
 
     // =========================================================
     // CENTERED QR CODE CARD
     // =========================================================
-    const qrBoxY = gridY + 29;
+    const qrBoxY = gridY + 18;
     const qrBoxWidth = 120;
     const qrBoxHeight = 84;
     const qrBoxX = cardX + (cardWidth - qrBoxWidth) / 2;
