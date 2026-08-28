@@ -35,11 +35,6 @@ export const Footer: React.FC = () => {
                 </Link>
               </li>
               <li>
-                <Link href="/pricing" className="hover:text-[#009FEF] transition-colors">
-                  Tarifs
-                </Link>
-              </li>
-              <li>
                 <Link href="/contact" className="hover:text-[#009FEF] transition-colors">
                   Contact
                 </Link>
