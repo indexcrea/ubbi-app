@@ -54,7 +54,7 @@ export default function RegisterPage() {
     
     // Check if redirect query param exists
     const searchParams = new URLSearchParams(window.location.search);
-    const redirectUrl = searchParams.get("redirect") || "/dashboard/organizer";
+    const redirectUrl = searchParams.get("redirect") || "/organizers/create";
     router.push(redirectUrl);
   };
 

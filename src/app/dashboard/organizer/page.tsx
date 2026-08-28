@@ -73,11 +73,7 @@ export default function OrganizerDashboardPage() {
             <div className="bg-white rounded-2xl p-4 border border-[#E2E4ED] shadow-sm space-y-1">
               {[
                 { id: "overview", label: "Vue d'ensemble", icon: LayoutDashboard },
-                { id: "events", label: "Événements", icon: Calendar },
-                { id: "tickets", label: "Billets", icon: Ticket },
-                { id: "attendees", label: "Participants", icon: Users },
                 { id: "access", label: "Contrôle d'accès", icon: QrCode },
-                { id: "revenue", label: "Revenus", icon: DollarSign },
                 { id: "settings", label: "Paramètres", icon: Settings },
               ].map((tab) => {
                 const Icon = tab.icon;
@@ -102,60 +98,76 @@ export default function OrganizerDashboardPage() {
 
           {/* Main Dashboard Panel */}
           <div className="lg:col-span-9 space-y-6">
-            {/* 4 Core Metric KPI Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {/* Card 1 */}
-              <div className="ubbi-card p-5 bg-white rounded-2xl border border-[#E2E4ED] space-y-2">
-                <span className="text-xs font-semibold text-[#666A80] uppercase tracking-wider block">
-                  Billets vendus
-                </span>
-                <div className="flex items-baseline justify-between">
-                  <span className="text-2xl font-extrabold text-[#111326]">1 842</span>
-                  <span className="text-xs text-[#666A80]">/ 2 000</span>
-                </div>
-                <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-                  <div className="bg-[#009FEF] h-full rounded-full" style={{ width: "92%" }} />
-                </div>
-              </div>
+            {/* Dynamic KPIs from stored events */}
+            {(() => {
+              const myEvents = getStoredEvents();
+              const sold = myEvents.reduce((acc, e) => acc + ((e as any).ticketsSold || 0), 0);
+              const capacity = myEvents.reduce((acc, e) => acc + ((e as any).capacity || 500), 500);
+              const rev = myEvents.reduce(
+                (acc, e) => acc + ((e as any).ticketsSold || 0) * (e.minPrice || e.tickets?.[0]?.price || 2000),
+                0
+              );
+              return (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {/* Card 1 */}
+                  <div className="ubbi-card p-5 bg-white rounded-2xl border border-[#E2E4ED] space-y-2">
+                    <span className="text-xs font-semibold text-[#666A80] uppercase tracking-wider block">
+                      Billets vendus
+                    </span>
+                    <div className="flex items-baseline justify-between">
+                      <span className="text-2xl font-extrabold text-[#111326]">{sold}</span>
+                      <span className="text-xs text-[#666A80]">/ {capacity}</span>
+                    </div>
+                    <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                      <div
+                        className="bg-[#009FEF] h-full rounded-full transition-all"
+                        style={{ width: `${Math.min(100, (sold / Math.max(1, capacity)) * 100)}%` }}
+                      />
+                    </div>
+                  </div>
 
-              {/* Card 2 */}
-              <div className="ubbi-card p-5 bg-white rounded-2xl border border-[#E2E4ED] space-y-2">
-                <span className="text-xs font-semibold text-[#666A80] uppercase tracking-wider block">
-                  Chiffre d'affaires
-                </span>
-                <div className="flex items-baseline justify-between">
-                  <span className="text-xl font-extrabold text-[#2A1464]">18,4M FCFA</span>
-                </div>
-                <span className="text-xs text-emerald-600 font-semibold flex items-center gap-1">
-                  <TrendingUp className="w-3.5 h-3.5" /> +14.2% vs semaine passée
-                </span>
-              </div>
+                  {/* Card 2 */}
+                  <div className="ubbi-card p-5 bg-white rounded-2xl border border-[#E2E4ED] space-y-2">
+                    <span className="text-xs font-semibold text-[#666A80] uppercase tracking-wider block">
+                      Chiffre d'affaires
+                    </span>
+                    <div className="flex items-baseline justify-between">
+                      <span className="text-xl font-extrabold text-[#2A1464]">
+                        {new Intl.NumberFormat("fr-FR").format(rev)} FCFA
+                      </span>
+                    </div>
+                    <span className="text-xs text-emerald-600 font-semibold flex items-center gap-1">
+                      <TrendingUp className="w-3.5 h-3.5" /> Synchronisé en direct
+                    </span>
+                  </div>
 
-              {/* Card 3 */}
-              <div className="ubbi-card p-5 bg-white rounded-2xl border border-[#E2E4ED] space-y-2">
-                <span className="text-xs font-semibold text-[#666A80] uppercase tracking-wider block">
-                  Entrées Scannées
-                </span>
-                <div className="flex items-baseline justify-between">
-                  <span className="text-2xl font-extrabold text-[#111326]">1 420</span>
-                  <span className="text-xs text-emerald-600 font-bold">77%</span>
-                </div>
-                <span className="text-[11px] text-[#666A80]">Contrôle en direct actif</span>
-              </div>
+                  {/* Card 3 */}
+                  <div className="ubbi-card p-5 bg-white rounded-2xl border border-[#E2E4ED] space-y-2">
+                    <span className="text-xs font-semibold text-[#666A80] uppercase tracking-wider block">
+                      Événements créés
+                    </span>
+                    <div className="flex items-baseline justify-between">
+                      <span className="text-2xl font-extrabold text-[#111326]">{myEvents.length}</span>
+                      <span className="text-xs text-[#009FEF] font-bold">Actifs sur Ubbi</span>
+                    </div>
+                    <span className="text-[11px] text-[#666A80]">Billetterie disponible</span>
+                  </div>
 
-              {/* Card 4 */}
-              <div className="ubbi-card p-5 bg-white rounded-2xl border border-[#E2E4ED] space-y-2">
-                <span className="text-xs font-semibold text-[#666A80] uppercase tracking-wider block">
-                  Taux de remplissage
-                </span>
-                <div className="flex items-baseline justify-between">
-                  <span className="text-2xl font-extrabold text-[#009FEF]">92.1%</span>
+                  {/* Card 4 */}
+                  <div className="ubbi-card p-5 bg-white rounded-2xl border border-[#E2E4ED] space-y-2">
+                    <span className="text-xs font-semibold text-[#666A80] uppercase tracking-wider block">
+                      Taux d'émission
+                    </span>
+                    <div className="flex items-baseline justify-between">
+                      <span className="text-2xl font-extrabold text-[#009FEF]">100%</span>
+                    </div>
+                    <span className="text-[11px] text-emerald-600 font-semibold">
+                      Commissions Ubbi à 3,5%
+                    </span>
+                  </div>
                 </div>
-                <span className="text-[11px] text-emerald-600 font-semibold">
-                  Jauge quasi complète
-                </span>
-              </div>
-            </div>
+              );
+            })()}
 
             {/* Tab Navigation Views */}
             {activeTab === "access" ? (

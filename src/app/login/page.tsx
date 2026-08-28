@@ -23,7 +23,7 @@ export default function LoginPage() {
     });
 
     const searchParams = new URLSearchParams(window.location.search);
-    const redirectUrl = searchParams.get("redirect") || "/organizers/create";
+    const redirectUrl = searchParams.get("redirect") || "/dashboard/organizer";
     router.push(redirectUrl);
   };
 
