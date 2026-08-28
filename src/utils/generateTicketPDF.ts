@@ -63,57 +63,73 @@ export async function generateTicketPDF(
     pdf.roundedRect(cardX, cardY, cardWidth, cardHeight, 6, 6, "D");
 
     // =========================================================
-    // HEADER BANNER WITH EVENT POSTER IMAGE
+    // 1. TOP AFFICHE OFFICIELLE CONTAINER (Clean Image Display)
     // =========================================================
-    const headerHeight = 48;
+    const posterHeight = 44;
 
-    // Draw default dark violet header base
-    pdf.setFillColor(25, 2, 98); // #190262
-    pdf.roundedRect(cardX, cardY, cardWidth, headerHeight, 6, 6, "F");
-    pdf.rect(cardX, cardY + headerHeight - 6, cardWidth, 6, "F");
+    // Draw dark violet poster background fallback
+    pdf.setFillColor(42, 20, 100);
+    pdf.roundedRect(cardX, cardY, cardWidth, posterHeight, 6, 6, "F");
+    pdf.rect(cardX, cardY + posterHeight - 6, cardWidth, 6, "F");
 
-    // Try embedding the real Event Poster image in the header background
+    // Embed poster image cleanly at the top without text overlay
     if (data.eventImage) {
       const posterDataUrl = await getImageDataUrl(data.eventImage);
       if (posterDataUrl) {
         try {
-          pdf.addImage(posterDataUrl, "JPEG", cardX, cardY, cardWidth, headerHeight);
+          pdf.addImage(posterDataUrl, "JPEG", cardX, cardY, cardWidth, posterHeight);
         } catch (e) {
-          // Ignore fallback to solid header
+          // Fallback solid header
         }
       }
     }
 
-    // Top logo: Ubbi Monogramme U
+    // =========================================================
+    // 2. INFO BAR BELOW POSTER: Logo, Event Title & Pass Badge
+    // =========================================================
+    const infoBarY = cardY + posterHeight;
+    const infoBarHeight = 18;
+
+    pdf.setFillColor(255, 255, 255);
+    pdf.rect(cardX, infoBarY, cardWidth, infoBarHeight, "F");
+    pdf.setDrawColor(226, 228, 237);
+    pdf.line(cardX, infoBarY + infoBarHeight, cardX + cardWidth, infoBarY + infoBarHeight);
+
+    // Ubbi Monogram Logo
     const logoDataUrl = await getImageDataUrl("/ubbi-monogramme-u.png");
     if (logoDataUrl) {
-      pdf.addImage(logoDataUrl, "PNG", cardX + 8, cardY + 8, 12, 14);
+      pdf.addImage(logoDataUrl, "PNG", cardX + 8, infoBarY + 3, 10, 12);
     } else {
-      pdf.setTextColor(255, 255, 255);
-      pdf.setFontSize(16);
+      pdf.setTextColor(42, 20, 100);
+      pdf.setFontSize(14);
       pdf.setFont("helvetica", "bold");
-      pdf.text("U", cardX + 8, cardY + 18);
+      pdf.text("U", cardX + 8, infoBarY + 12);
     }
 
-    // Pass Category Badge Top Right
+    // Small Tag line & Event Title
+    pdf.setTextColor(0, 159, 239);
+    pdf.setFontSize(6.5);
+    pdf.setFont("helvetica", "bold");
+    pdf.text("EVENEMENT OFFICIEL", cardX + 22, infoBarY + 6);
+
+    pdf.setTextColor(17, 19, 38);
+    pdf.setFontSize(12);
+    pdf.setFont("helvetica", "bold");
+    pdf.text(data.eventName, cardX + 22, infoBarY + 13);
+
+    // Pass Category Badge (Right Side)
     const badgeText = `PASS ${data.category || "ENTRÉE UNIQUE"}`.toUpperCase();
     pdf.setFillColor(0, 159, 239); // #009FEF
-    pdf.roundedRect(cardX + cardWidth - 54, cardY + 9, 46, 8, 4, 4, "F");
+    pdf.roundedRect(cardX + cardWidth - 48, infoBarY + 5, 40, 7.5, 3.5, 3.5, "F");
     pdf.setTextColor(255, 255, 255);
-    pdf.setFontSize(8);
+    pdf.setFontSize(7.5);
     pdf.setFont("helvetica", "bold");
-    pdf.text(badgeText, cardX + cardWidth - 31, cardY + 14.5, { align: "center" });
-
-    // Event Title (White text)
-    pdf.setTextColor(255, 255, 255);
-    pdf.setFontSize(16);
-    pdf.setFont("helvetica", "bold");
-    pdf.text(data.eventName, cardX + 8, cardY + 41);
+    pdf.text(badgeText, cardX + cardWidth - 28, infoBarY + 10, { align: "center" });
 
     // =========================================================
-    // PERFORATION LINE & TICKET NUMBER
+    // 3. PERFORATION LINE & TICKET NUMBER
     // =========================================================
-    const perfY = cardY + headerHeight + 6;
+    const perfY = infoBarY + infoBarHeight + 5;
     pdf.setDrawColor(200, 202, 215);
     pdf.setLineWidth(0.3);
     pdf.setLineDashPattern([1.5, 1.5], 0);

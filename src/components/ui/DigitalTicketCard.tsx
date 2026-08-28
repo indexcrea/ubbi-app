@@ -67,33 +67,37 @@ export const DigitalTicketCard: React.FC<DigitalTicketCardProps> = ({
       <div ref={ticketRef} className="relative bg-white rounded-3xl shadow-2xl border border-[#E2E4ED] overflow-hidden text-[#111326]">
         
         {/* ========================================================= */}
-        {/* GABARIT BILLET : EN-TÊTE PERSONNALISÉ                      */}
+        {/* AFFICHE OFFICIELLE EN HAUT (Clean Image Display)           */}
         {/* ========================================================= */}
-        <div className="relative h-40 p-5 flex flex-col justify-between overflow-hidden text-white">
-          {/* Photo de couverture de l'affiche de l'événement */}
+        <div className="relative h-44 w-full overflow-hidden bg-[#2A1464]">
           <img
             src={eventImage}
             alt={eventName}
-            className="absolute inset-0 w-full h-full object-cover"
+            className="w-full h-full object-cover"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#190262] via-[#190262]/80 to-black/30" />
+        </div>
 
-          {/* Ligne Supérieure : Logo Ubbi Monogramme U & Badge Catégorie */}
-          <div className="flex items-center justify-between relative z-10">
+        {/* ========================================================= */}
+        {/* INFO BAR EN BAS DE L'AFFICHE : Logo, Titre & Badge Pass   */}
+        {/* ========================================================= */}
+        <div className="p-4 bg-white border-b border-[#E2E4ED] flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
             <img
               src="/ubbi-monogramme-u.png"
               alt="Ubbi Monogramme U"
-              className="h-9 w-auto object-contain drop-shadow-md"
+              className="h-9 w-auto object-contain flex-shrink-0"
             />
-            <div className="bg-[#009FEF] text-white text-xs font-extrabold px-3 py-1 rounded-full uppercase tracking-wider shadow-md flex items-center gap-1">
-              <Sparkles className="w-3.5 h-3.5 text-white" />
-              <span>Pass {category}</span>
+            <div>
+              <span className="text-[9px] font-extrabold text-[#009FEF] uppercase tracking-wider block">
+                Événement Officiel
+              </span>
+              <h3 className="text-base font-extrabold text-[#111326] leading-tight">{eventName}</h3>
             </div>
           </div>
 
-          {/* Titre de l'événement */}
-          <div className="relative z-10">
-            <h3 className="text-xl font-extrabold text-white leading-tight drop-shadow-md">{eventName}</h3>
+          <div className="bg-[#009FEF] text-white text-[11px] font-extrabold px-3 py-1.5 rounded-full uppercase tracking-wider shadow-xs flex items-center gap-1 flex-shrink-0">
+            <Sparkles className="w-3.5 h-3.5 text-white" />
+            <span>Pass {category}</span>
           </div>
         </div>
 
