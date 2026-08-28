@@ -46,13 +46,23 @@ export default function OrganizerDashboardPage() {
             </h1>
           </div>
 
-          <Link
-            href="/organizers/create"
-            className="bg-[#009FEF] hover:bg-[#0084C9] text-white font-extrabold text-sm px-5 py-3 rounded-xl shadow-md flex items-center gap-2"
-          >
-            <PlusCircle className="w-5 h-5" />
-            <span>+ Créer un événement</span>
-          </Link>
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              onClick={() => setActiveTab("access")}
+              className="bg-[#2A1464] hover:bg-[#1E0D4B] text-white font-extrabold text-xs sm:text-sm px-4 py-3 rounded-xl shadow-md flex items-center gap-2 transition-all"
+            >
+              <QrCode className="w-4 h-4 text-[#009FEF]" />
+              <span>📱 Démarrer le Scanner de Porte</span>
+            </button>
+
+            <Link
+              href="/organizers/create"
+              className="bg-[#009FEF] hover:bg-[#0084C9] text-white font-extrabold text-xs sm:text-sm px-5 py-3 rounded-xl shadow-md flex items-center gap-2 transition-all"
+            >
+              <PlusCircle className="w-5 h-5" />
+              <span>+ Créer un événement</span>
+            </Link>
+          </div>
         </div>
 
         {/* Dashboard Main Grid with Sidebar */}

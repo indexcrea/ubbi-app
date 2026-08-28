@@ -16,9 +16,15 @@ import {
   Volume2,
   Clock,
   Sparkles,
+  Lock,
+  Share2,
+  Copy,
+  Check,
+  Smartphone,
 } from "lucide-react";
 import { getStoredEvents } from "@/utils/eventStore";
 import { EventItem } from "@/data/mockEvents";
+import { getScanLockStatus, setScanLockStatus, getAgentScanLink } from "@/utils/scanLockStore";
 
 interface ScanRecord {
   id: string;
@@ -35,9 +41,11 @@ export function QRScannerModule() {
   const [selectedEventSlug, setSelectedEventSlug] = useState<string>("");
   const [manualCode, setManualCode] = useState("");
   const [scanningActive, setScanningActive] = useState(true);
-  const [flashOn, setFlashOn] = useState(false);
   const [cameraFacing, setCameraFacing] = useState<"environment" | "user">("environment");
   const [lastScanResult, setLastScanResult] = useState<ScanRecord | null>(null);
+  const [isLocked, setIsLocked] = useState(false);
+  const [copiedLink, setCopiedLink] = useState(false);
+
   const [scanHistory, setScanHistory] = useState<ScanRecord[]>([
     {
       id: "scan-1",
@@ -46,7 +54,7 @@ export function QRScannerModule() {
       category: "VIP",
       timestamp: "20:14:05",
       status: "SUCCESS",
-      gate: "Porte A — VIP",
+      gate: "Smartphone Agent 1",
     },
     {
       id: "scan-2",
@@ -55,7 +63,7 @@ export function QRScannerModule() {
       category: "STANDARD",
       timestamp: "20:12:30",
       status: "SUCCESS",
-      gate: "Porte A — VIP",
+      gate: "Smartphone Agent 2",
     },
     {
       id: "scan-3",
@@ -64,7 +72,7 @@ export function QRScannerModule() {
       category: "VIP",
       timestamp: "20:10:15",
       status: "DUPLICATE",
-      gate: "Porte B — Standard",
+      gate: "Smartphone Agent 1",
     },
   ]);
 
@@ -76,484 +84,327 @@ export function QRScannerModule() {
   });
 
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [hasWebcam, setHasWebcam] = useState(false);
 
   useEffect(() => {
     const loadedEvents = getStoredEvents();
     setEvents(loadedEvents);
+    
+    // Read query param if passed
+    if (typeof window !== "undefined") {
+      const searchParams = new URLSearchParams(window.location.search);
+      const urlEvent = searchParams.get("event");
+      if (urlEvent && loadedEvents.some((e) => e.slug === urlEvent)) {
+        setSelectedEventSlug(urlEvent);
+        setIsLocked(getScanLockStatus(urlEvent));
+        return;
+      }
+    }
+
     if (loadedEvents.length > 0) {
       setSelectedEventSlug(loadedEvents[0].slug);
+      setIsLocked(getScanLockStatus(loadedEvents[0].slug));
     }
   }, []);
 
-  // Request actual camera feed if supported
-  const startCamera = async () => {
-    try {
-      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: cameraFacing },
-        });
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
-          videoRef.current.play();
-          setHasWebcam(true);
-        }
-      }
-    } catch (err) {
-      console.log("Caméra physique indisponible, mode simulation actif.", err);
-      setHasWebcam(false);
+  const handleEventChange = (slug: string) => {
+    setSelectedEventSlug(slug);
+    setIsLocked(getScanLockStatus(slug));
+  };
+
+  const toggleLockState = () => {
+    const nextState = !isLocked;
+    setIsLocked(nextState);
+    if (selectedEventSlug) {
+      setScanLockStatus(selectedEventSlug, nextState);
     }
   };
 
-  useEffect(() => {
-    startCamera();
-    return () => {
-      if (videoRef.current && videoRef.current.srcObject) {
-        const stream = videoRef.current.srcObject as MediaStream;
-        stream.getTracks().forEach((track) => track.stop());
-      }
-    };
-  }, [cameraFacing]);
+  const handleCopyLink = () => {
+    if (!selectedEventSlug) return;
+    const link = getAgentScanLink(selectedEventSlug);
+    navigator.clipboard.writeText(link);
+    setCopiedLink(true);
+    setTimeout(() => setCopiedLink(false), 2000);
+  };
 
-  const activeEvent = events.find((e) => e.slug === selectedEventSlug) || events[0];
+  const processScan = (codeToTest: string) => {
+    if (isLocked) return;
 
-  const processScan = (code: string, forceResult?: "SUCCESS" | "DUPLICATE" | "INVALID") => {
-    const cleanCode = code.trim().toUpperCase() || `UBBI-2026-${Math.floor(1000 + Math.random() * 9000)}`;
-    const now = new Date();
-    const timeStr = `${now.getHours().toString().padStart(2, "0")}:${now.getMinutes().toString().padStart(2, "0")}:${now.getSeconds().toString().padStart(2, "0")}`;
+    const trimmed = codeToTest.trim().toUpperCase();
+    if (!trimmed) return;
 
-    let status: "SUCCESS" | "DUPLICATE" | "INVALID" = forceResult || "SUCCESS";
-
-    if (!forceResult) {
-      if (cleanCode.includes("DUP") || cleanCode === "UBBI-DUPLICATE") {
-        status = "DUPLICATE";
-      } else if (cleanCode.includes("INV") || cleanCode === "UBBI-INVALID") {
-        status = "INVALID";
-      }
-    }
-
-    const sampleNames = ["Mariama Ba", "Ibrahima Fall", "Awa Seck", "Ousmane Diagne", "Khadija Faye"];
-    const name = sampleNames[Math.floor(Math.random() * sampleNames.length)];
-    const category = activeEvent?.tickets?.[0]?.name || "STANDARD";
+    const isDuplicate = scanHistory.some((s) => s.ticketNumber === trimmed && s.status === "SUCCESS");
 
     const newRecord: ScanRecord = {
       id: `scan-${Date.now()}`,
-      ticketNumber: cleanCode,
-      attendeeName: name,
-      category,
-      timestamp: timeStr,
-      status,
-      gate: "Porte A — VIP",
+      ticketNumber: trimmed.startsWith("UBBI-") ? trimmed : `UBBI-2026-${trimmed.slice(-4) || "8821"}`,
+      attendeeName: "Participant Scanné",
+      category: trimmed.includes("VIP") ? "VIP" : "STANDARD",
+      timestamp: new Date().toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit", second: "2-digit" }),
+      status: isDuplicate ? "DUPLICATE" : "SUCCESS",
+      gate: "Smartphone Contrôleur",
     };
 
     setLastScanResult(newRecord);
-    setScanHistory((prev) => [newRecord, ...prev.slice(0, 9)]);
+    setScanHistory((prev) => [newRecord, ...prev]);
 
-    if (status === "SUCCESS") {
-      setStats((prev) => ({
-        ...prev,
-        totalScanned: prev.totalScanned + 1,
-        validScans: prev.validScans + 1,
-      }));
-    } else if (status === "DUPLICATE") {
-      setStats((prev) => ({
-        ...prev,
-        duplicates: prev.duplicates + 1,
-      }));
-    }
+    setStats((prev) => ({
+      ...prev,
+      totalScanned: prev.totalScanned + 1,
+      validScans: isDuplicate ? prev.validScans : prev.validScans + 1,
+      duplicates: isDuplicate ? prev.duplicates + 1 : prev.duplicates,
+    }));
 
     setManualCode("");
   };
 
-  const percentage = Math.round((stats.totalScanned / stats.totalTickets) * 100);
+  const selectedEvent = events.find((e) => e.slug === selectedEventSlug);
 
   return (
-    <div className="space-y-6 text-[#111326]">
-      {/* Top Header & Event Switcher Bar */}
-      <div className="bg-white rounded-2xl p-5 border border-[#E2E4ED] shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+    <div className="space-y-6">
+      {/* 1. Header Control Bar & Lock Switch */}
+      <div className="bg-white rounded-3xl p-6 shadow-xl border border-white/60 flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-          <div className="flex items-center gap-2">
-            <span className="bg-[#2A1464] text-white text-[11px] font-extrabold px-3 py-1 rounded-full flex items-center gap-1">
-              <ShieldCheck className="w-3.5 h-3.5 text-[#009FEF]" />
-              Scanner Contrôle d'Accès Ubbi
+          <div className="flex items-center gap-2 mb-1">
+            <span className="bg-[#E5F6FF] text-[#009FEF] text-[11px] font-extrabold px-3 py-0.5 rounded-full uppercase tracking-wider">
+              Module Web de Contrôle Porte
             </span>
-            <span className="text-[11px] font-bold text-emerald-600 bg-emerald-50 px-2.5 py-0.5 rounded-full flex items-center gap-1 border border-emerald-200">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              Scanner en direct
+            <span className="bg-[#F7F7FA] text-[#666A80] text-[11px] font-bold px-2.5 py-0.5 rounded-full border border-[#E2E4ED]">
+              Sans application mobile
             </span>
           </div>
-          <h2 className="text-xl sm:text-2xl font-extrabold text-[#111326] mt-1">
-            {activeEvent?.title || "Contrôle des Billets à la Porte"}
+          <h2 className="text-2xl font-extrabold text-[#111326]">
+            {selectedEvent ? selectedEvent.title : "Scanner de Billets"}
           </h2>
+          <p className="text-xs text-[#666A80] mt-0.5">
+            Validez les entrées depuis votre smartphone ou partagez le lien sécurisé avec vos contrôleurs.
+          </p>
         </div>
 
-        {/* Event Dropdown Selector */}
-        <div className="w-full sm:w-auto">
-          <label className="block text-[11px] font-bold text-[#666A80] mb-1">
-            Événement actif en contrôle :
-          </label>
-          <select
-            value={selectedEventSlug}
-            onChange={(e) => setSelectedEventSlug(e.target.value)}
-            className="w-full sm:w-64 bg-[#F7F7FA] border border-[#E2E4ED] text-[#111326] font-bold text-xs rounded-xl px-3.5 py-2.5 focus:outline-none focus:border-[#009FEF]"
+        {/* Action Controls & Lock Toggle */}
+        <div className="flex flex-wrap items-center gap-3">
+          {/* Lock / Unlock Toggle Button */}
+          <button
+            onClick={toggleLockState}
+            className={`px-4 py-2.5 rounded-xl font-extrabold text-xs flex items-center gap-2 shadow-sm transition-all ${
+              isLocked
+                ? "bg-[#FFEBEB] text-[#E52E2E] border border-[#FFC2C2] hover:bg-[#FFD6D6]"
+                : "bg-[#E6F8F0] text-[#00A86B] border border-[#B3EBD3] hover:bg-[#D1F3E4]"
+            }`}
           >
-            {events.map((evt) => (
-              <option key={evt.id} value={evt.slug}>
-                {evt.title} ({evt.venue})
-              </option>
-            ))}
-          </select>
+            <Lock className="w-4 h-4" />
+            <span>{isLocked ? "Scans Verrouillés (Portes fermées)" : "Scans Actifs (Portes Ouvertes)"}</span>
+          </button>
+
+          {/* Copy Secure Agent Share Link */}
+          <button
+            onClick={handleCopyLink}
+            className="bg-[#2A1464] hover:bg-[#1E0D4B] text-white font-bold text-xs px-4 py-2.5 rounded-xl shadow-sm flex items-center gap-2 transition-colors"
+            title="Copier le lien sécurisé pour vos 1 à 3 agents à la porte"
+          >
+            {copiedLink ? <Check className="w-4 h-4 text-[#009FEF]" /> : <Share2 className="w-4 h-4" />}
+            <span>{copiedLink ? "Lien Copié !" : "Partager lien aux agents (1 à 3 phones)"}</span>
+          </button>
         </div>
       </div>
 
-      {/* Live Scan KPI Summary Bar */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <div className="bg-white rounded-2xl p-4 border border-[#E2E4ED] shadow-xs">
-          <span className="text-[10px] font-bold text-[#666A80] uppercase tracking-wider block">
-            Entrées Validées
-          </span>
-          <div className="flex items-baseline gap-2 mt-1">
-            <span className="text-2xl font-extrabold text-[#2A1464]">{stats.validScans}</span>
-            <span className="text-xs text-[#666A80]">/ {stats.totalTickets}</span>
+      {/* If Event Scans are Locked by Organizer */}
+      {isLocked ? (
+        <div className="bg-[#FFEBEB] border-2 border-[#FFC2C2] rounded-3xl p-8 sm:p-12 text-center space-y-4 shadow-lg animate-in fade-in zoom-in-95">
+          <div className="w-20 h-20 bg-[#E52E2E] text-white rounded-3xl flex items-center justify-center mx-auto shadow-md">
+            <Lock className="w-10 h-10" />
           </div>
-        </div>
-
-        <div className="bg-white rounded-2xl p-4 border border-[#E2E4ED] shadow-xs">
-          <span className="text-[10px] font-bold text-[#666A80] uppercase tracking-wider block">
-            Taux de Remplissage
-          </span>
-          <div className="flex items-baseline gap-2 mt-1">
-            <span className="text-2xl font-extrabold text-[#009FEF]">{percentage}%</span>
+          <div className="max-w-md mx-auto space-y-2">
+            <h3 className="text-2xl font-extrabold text-[#991B1B]">
+              Contrôle d'Accès Verrouillé
+            </h3>
+            <p className="text-xs sm:text-sm text-[#7F1D1D] leading-relaxed">
+              L'organisateur a fermé le scannage des billets pour cet événement. Les accès sont temporairement bloqués.
+            </p>
           </div>
+          <button
+            onClick={toggleLockState}
+            className="inline-flex items-center gap-2 bg-[#E52E2E] text-white text-xs font-extrabold px-6 py-3 rounded-xl shadow-md hover:bg-[#C92020] transition-colors mt-2"
+          >
+            <span>Déverrouiller les Scans de Porte</span>
+          </button>
         </div>
-
-        <div className="bg-white rounded-2xl p-4 border border-[#E2E4ED] shadow-xs">
-          <span className="text-[10px] font-bold text-[#666A80] uppercase tracking-wider block">
-            Doublons / Refus
-          </span>
-          <div className="flex items-baseline gap-2 mt-1">
-            <span className="text-2xl font-extrabold text-rose-600">{stats.duplicates}</span>
-            <span className="text-xs text-rose-600 font-bold bg-rose-50 px-2 py-0.5 rounded-full">
-              Alertes
-            </span>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-2xl p-4 border border-[#E2E4ED] shadow-xs">
-          <span className="text-[10px] font-bold text-[#666A80] uppercase tracking-wider block">
-            Porte d'accès
-          </span>
-          <div className="mt-1">
-            <span className="text-xs font-bold text-[#111326] block">Porte A — VIP</span>
-            <span className="text-[11px] text-[#666A80]">Agent #04 (Moussa D.)</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Grid: Scanner Viewfinder & Live History */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Left Column: Interactive QR Scanner Camera Frame (7 Cols) */}
-        <div className="lg:col-span-7 space-y-4">
-          <div className="bg-[#111326] rounded-3xl p-6 border border-white/10 shadow-2xl relative overflow-hidden text-white">
-            <div className="flex items-center justify-between mb-4 relative z-10">
-              <div className="flex items-center gap-2">
-                <Scan className="w-5 h-5 text-[#009FEF] animate-spin" />
-                <h3 className="font-bold text-sm text-white">Viseur Optique QR Code</h3>
+      ) : (
+        <>
+          {/* Live Real-time Scan Statistics Counter */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* Total Scanned */}
+            <div className="bg-white rounded-2xl p-5 border border-white/60 shadow-md">
+              <div className="flex items-center justify-between text-[#666A80] mb-2">
+                <span className="text-xs font-bold uppercase tracking-wider">Billets Scannés</span>
+                <Users className="w-5 h-5 text-[#009FEF]" />
               </div>
-
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => setFlashOn(!flashOn)}
-                  className={`p-2 rounded-xl border text-xs font-bold transition-all ${
-                    flashOn
-                      ? "bg-amber-400 text-black border-amber-300 shadow-md"
-                      : "bg-white/10 text-white border-white/20 hover:bg-white/20"
-                  }`}
-                  title="Activer le Flash"
-                >
-                  <Flashlight className="w-4 h-4" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() =>
-                    setCameraFacing(cameraFacing === "environment" ? "user" : "environment")
-                  }
-                  className="p-2 bg-white/10 text-white border border-white/20 hover:bg-white/20 rounded-xl text-xs font-bold transition-all"
-                  title="Pivoter la caméra"
-                >
-                  <RefreshCw className="w-4 h-4" />
-                </button>
+              <div className="text-2xl sm:text-3xl font-extrabold text-[#111326]">
+                {stats.totalScanned} <span className="text-xs font-normal text-[#666A80]">/ {stats.totalTickets}</span>
+              </div>
+              <div className="w-full bg-[#F7F7FA] h-2 rounded-full mt-3 overflow-hidden">
+                <div
+                  className="bg-[#009FEF] h-full rounded-full transition-all duration-500"
+                  style={{ width: `${Math.min(100, (stats.totalScanned / stats.totalTickets) * 100)}%` }}
+                />
               </div>
             </div>
 
-            {/* Viewfinder Box */}
-            <div className="relative w-full aspect-square max-w-sm mx-auto bg-black rounded-2xl overflow-hidden border-2 border-[#009FEF]/60 flex items-center justify-center shadow-inner group">
-              {/* Actual Video Element or Simulated Grid */}
-              <video
-                ref={videoRef}
-                playsInline
-                muted
-                className={`w-full h-full object-cover ${hasWebcam ? "block" : "hidden"}`}
-              />
+            {/* Valid Scans */}
+            <div className="bg-white rounded-2xl p-5 border border-white/60 shadow-md">
+              <div className="flex items-center justify-between text-[#666A80] mb-2">
+                <span className="text-xs font-bold uppercase tracking-wider">Entrées Valides</span>
+                <CheckCircle2 className="w-5 h-5 text-[#00A86B]" />
+              </div>
+              <div className="text-2xl sm:text-3xl font-extrabold text-[#00A86B]">
+                {stats.validScans}
+              </div>
+              <p className="text-[11px] text-[#666A80] mt-2">Accès autorisés en salle</p>
+            </div>
 
-              {!hasWebcam && (
-                <div className="absolute inset-0 bg-gradient-to-b from-[#190262]/80 to-[#0A0331] flex flex-col items-center justify-center p-6 text-center">
-                  <div className="w-20 h-20 bg-white/10 rounded-full flex items-center justify-center mb-3 backdrop-blur-md">
-                    <Camera className="w-10 h-10 text-[#009FEF]" />
-                  </div>
-                  <p className="text-xs font-bold text-white">Caméra en attente de billet</p>
-                  <p className="text-[11px] text-white/60 mt-1 max-w-xs">
-                    Placez le QR Code du billet devant la caméra pour déclencher le scan automatique.
+            {/* Duplicates Refused */}
+            <div className="bg-white rounded-2xl p-5 border border-white/60 shadow-md">
+              <div className="flex items-center justify-between text-[#666A80] mb-2">
+                <span className="text-xs font-bold uppercase tracking-wider">Doublons Refusés</span>
+                <XCircle className="w-5 h-5 text-[#E52E2E]" />
+              </div>
+              <div className="text-2xl sm:text-3xl font-extrabold text-[#E52E2E]">
+                {stats.duplicates}
+              </div>
+              <p className="text-[11px] text-[#666A80] mt-2">Tentatives de réutilisation</p>
+            </div>
+
+            {/* Smartphone Agents Active */}
+            <div className="bg-white rounded-2xl p-5 border border-white/60 shadow-md">
+              <div className="flex items-center justify-between text-[#666A80] mb-2">
+                <span className="text-xs font-bold uppercase tracking-wider">Smartphones Agents</span>
+                <Smartphone className="w-5 h-5 text-[#2A1464]" />
+              </div>
+              <div className="text-2xl sm:text-3xl font-extrabold text-[#2A1464]">
+                3 <span className="text-xs font-normal text-[#666A80]">max actifs</span>
+              </div>
+              <p className="text-[11px] text-[#00A86B] font-semibold mt-2">● Synchronisation en direct</p>
+            </div>
+          </div>
+
+          {/* Main Viewfinder & Input Scanner Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            {/* Camera Viewfinder Container */}
+            <div className="lg:col-span-7 bg-[#0a0331] rounded-3xl p-6 text-white shadow-2xl border border-white/10 flex flex-col justify-between min-h-[420px] relative overflow-hidden">
+              <div className="flex items-center justify-between z-10">
+                <div className="flex items-center gap-2">
+                  <span className="relative flex h-3 w-3">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#00A86B] opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-3 w-3 bg-[#00A86B]"></span>
+                  </span>
+                  <span className="text-xs font-extrabold tracking-wide uppercase">Viseur Caméra Smartphone</span>
+                </div>
+              </div>
+
+              {/* Viewfinder Frame with Laser Scan Bar */}
+              <div className="relative my-8 mx-auto w-64 h-64 sm:w-72 sm:h-72 border-2 border-dashed border-[#009FEF]/60 rounded-3xl flex items-center justify-center bg-black/30 backdrop-blur-sm overflow-hidden">
+                <div className="w-full h-1 bg-[#009FEF] absolute shadow-[0_0_15px_#009FEF] animate-pulse top-1/2 -translate-y-1/2" />
+                <div className="text-center p-4">
+                  <Scan className="w-16 h-16 text-[#009FEF]/70 mx-auto animate-bounce mb-2" />
+                  <p className="text-xs font-semibold text-slate-300">
+                    Placez le QR Code du billet dans le cadran
                   </p>
                 </div>
-              )}
-
-              {/* Animated Laser Beam */}
-              <div className="absolute inset-x-4 top-1/2 h-0.5 bg-[#009FEF] shadow-[0_0_15px_#009FEF] animate-pulse z-20" />
-              <div className="absolute inset-x-8 top-1/3 bottom-1/3 border-2 border-dashed border-[#009FEF]/50 rounded-xl z-20 pointer-events-none" />
-
-              {/* Corner Frame Markers */}
-              <div className="absolute top-4 left-4 w-6 h-6 border-t-4 border-l-4 border-[#009FEF] rounded-tl-lg" />
-              <div className="absolute top-4 right-4 w-6 h-6 border-t-4 border-r-4 border-[#009FEF] rounded-tr-lg" />
-              <div className="absolute bottom-4 left-4 w-6 h-6 border-b-4 border-l-4 border-[#009FEF] rounded-bl-lg" />
-              <div className="absolute bottom-4 right-4 w-6 h-6 border-b-4 border-r-4 border-[#009FEF] rounded-br-lg" />
-            </div>
-
-            {/* Quick Simulation Buttons */}
-            <div className="mt-6 pt-4 border-t border-white/10 space-y-2">
-              <span className="text-[11px] font-bold text-white/70 block text-center">
-                Simulateur de Scan Rapide pour Démonstration :
-              </span>
-
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                <button
-                  type="button"
-                  onClick={() => processScan("UBBI-2026-9842", "SUCCESS")}
-                  className="bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs py-2.5 px-3 rounded-xl flex items-center justify-center gap-1.5 shadow-md transition-colors"
-                >
-                  <CheckCircle2 className="w-4 h-4" />
-                  <span>Scan Valide</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => processScan("UBBI-DUPLICATE", "DUPLICATE")}
-                  className="bg-rose-600 hover:bg-rose-500 text-white font-extrabold text-xs py-2.5 px-3 rounded-xl flex items-center justify-center gap-1.5 shadow-md transition-colors"
-                >
-                  <AlertTriangle className="w-4 h-4" />
-                  <span>Billet Déjà Utilisé</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => processScan("UBBI-INVALID", "INVALID")}
-                  className="bg-amber-600 hover:bg-amber-500 text-white font-extrabold text-xs py-2.5 px-3 rounded-xl flex items-center justify-center gap-1.5 shadow-md transition-colors"
-                >
-                  <XCircle className="w-4 h-4" />
-                  <span>Code Invalide</span>
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Manual Input Fallback */}
-          <div className="bg-white rounded-2xl p-4 border border-[#E2E4ED] shadow-xs">
-            <label className="block text-xs font-bold text-[#111326] mb-1.5">
-              Saisie Manuelle du Code Billet (En cas de problème d'écran) :
-            </label>
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                if (manualCode) processScan(manualCode);
-              }}
-              className="flex gap-2"
-            >
-              <input
-                type="text"
-                placeholder="Ex: UBBI-2026-9842"
-                value={manualCode}
-                onChange={(e) => setManualCode(e.target.value)}
-                className="flex-1 bg-[#F7F7FA] border border-[#E2E4ED] rounded-xl px-4 py-2.5 text-xs font-bold text-[#111326] uppercase outline-none focus:border-[#009FEF]"
-              />
-              <button
-                type="submit"
-                className="bg-[#2A1464] hover:bg-[#1F0D4F] text-white font-bold text-xs px-5 py-2.5 rounded-xl shadow-xs"
-              >
-                Valider
-              </button>
-            </form>
-          </div>
-        </div>
-
-        {/* Right Column: Scan Result Popup Card & Recent Scans History (5 Cols) */}
-        <div className="lg:col-span-5 space-y-4">
-          {/* Active Scan Result Screen */}
-          {lastScanResult ? (
-            <div
-              className={`rounded-3xl p-6 border shadow-xl transition-all ${
-                lastScanResult.status === "SUCCESS"
-                  ? "bg-emerald-50 border-emerald-300 text-emerald-950"
-                  : lastScanResult.status === "DUPLICATE"
-                  ? "bg-rose-50 border-rose-300 text-rose-950"
-                  : "bg-amber-50 border-amber-300 text-amber-950"
-              }`}
-            >
-              <div className="flex items-center justify-between pb-3 border-b border-current/20">
-                <span className="text-xs font-extrabold uppercase tracking-wider flex items-center gap-1">
-                  <Clock className="w-4 h-4" />
-                  Résultat du Scan ({lastScanResult.timestamp})
-                </span>
-                <button
-                  onClick={() => setLastScanResult(null)}
-                  className="text-xs font-bold opacity-60 hover:opacity-100"
-                >
-                  ✕ Fermer
-                </button>
               </div>
 
-              <div className="mt-4 text-center space-y-3">
-                {lastScanResult.status === "SUCCESS" && (
-                  <>
-                    <div className="w-16 h-16 bg-emerald-500 text-white rounded-full flex items-center justify-center mx-auto shadow-lg animate-bounce">
-                      <CheckCircle2 className="w-10 h-10" />
-                    </div>
-                    <div>
-                      <h3 className="text-2xl font-black text-emerald-800">ENTRÉE AUTORISÉE</h3>
-                      <p className="text-xs font-bold text-emerald-700 mt-0.5">
-                        Billet Officiel Conforme ✓
-                      </p>
-                    </div>
-
-                    <div className="bg-white/80 backdrop-blur-xs rounded-2xl p-4 border border-emerald-200 text-left space-y-1.5 text-xs text-[#111326]">
-                      <div className="flex justify-between">
-                        <span className="text-[#666A80]">Titulaire :</span>
-                        <span className="font-extrabold">{lastScanResult.attendeeName}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-[#666A80]">Pass :</span>
-                        <span className="font-extrabold text-[#009FEF] bg-[#E5F6FF] px-2 py-0.5 rounded">
-                          {lastScanResult.category}
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-[#666A80]">Réf Billet :</span>
-                        <span className="font-mono font-bold">{lastScanResult.ticketNumber}</span>
-                      </div>
-                    </div>
-                  </>
-                )}
-
-                {lastScanResult.status === "DUPLICATE" && (
-                  <>
-                    <div className="w-16 h-16 bg-rose-600 text-white rounded-full flex items-center justify-center mx-auto shadow-lg">
-                      <AlertTriangle className="w-10 h-10" />
-                    </div>
-                    <div>
-                      <h3 className="text-2xl font-black text-rose-800">ACCÈS REFUSÉ — DÉJÀ SCANNE</h3>
-                      <p className="text-xs font-bold text-rose-700 mt-0.5">
-                        Attention : Ce billet a déjà franchi la porte d'entrée !
-                      </p>
-                    </div>
-
-                    <div className="bg-white/80 backdrop-blur-xs rounded-2xl p-4 border border-rose-200 text-left space-y-1.5 text-xs text-[#111326]">
-                      <div className="flex justify-between">
-                        <span className="text-[#666A80]">Premier Scan :</span>
-                        <span className="font-bold text-rose-600">Aujourd'hui à 19:45 (Porte B)</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-[#666A80]">Titulaire d'origine :</span>
-                        <span className="font-extrabold">{lastScanResult.attendeeName}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-[#666A80]">Réf Billet :</span>
-                        <span className="font-mono font-bold">{lastScanResult.ticketNumber}</span>
-                      </div>
-                    </div>
-                  </>
-                )}
-
-                {lastScanResult.status === "INVALID" && (
-                  <>
-                    <div className="w-16 h-16 bg-amber-500 text-white rounded-full flex items-center justify-center mx-auto shadow-lg">
-                      <XCircle className="w-10 h-10" />
-                    </div>
-                    <div>
-                      <h3 className="text-2xl font-black text-amber-900">BILLET NON VALIDE</h3>
-                      <p className="text-xs font-bold text-amber-800 mt-0.5">
-                        Code non reconnu ou événement incorrect.
-                      </p>
-                    </div>
-                  </>
-                )}
-              </div>
-            </div>
-          ) : (
-            <div className="bg-white rounded-3xl p-6 border border-[#E2E4ED] text-center shadow-xs space-y-3">
-              <div className="w-12 h-12 bg-[#E5F6FF] text-[#009FEF] rounded-2xl flex items-center justify-center mx-auto">
-                <Zap className="w-6 h-6" />
-              </div>
-              <h3 className="font-bold text-sm text-[#111326]">Scanner Prêt pour le Prochain Billet</h3>
-              <p className="text-xs text-[#666A80] max-w-xs mx-auto">
-                Scannez le QR Code d'un participant ou utilisez les boutons de démonstration à gauche pour afficher le résultat d'accès.
-              </p>
-            </div>
-          )}
-
-          {/* Recent Scans Journal */}
-          <div className="bg-white rounded-3xl p-5 border border-[#E2E4ED] shadow-sm space-y-4">
-            <div className="flex items-center justify-between border-b border-[#E2E4ED] pb-3">
-              <h3 className="font-bold text-sm text-[#111326] flex items-center gap-1.5">
-                <Users className="w-4 h-4 text-[#009FEF]" />
-                Journal des Derniers Scans
-              </h3>
-              <span className="text-[11px] font-bold text-[#666A80]">En direct</span>
-            </div>
-
-            <div className="space-y-2 max-h-72 overflow-y-auto">
-              {scanHistory.map((scan) => (
+              {/* Instant Scan Validation Banner Feedback */}
+              {lastScanResult && (
                 <div
-                  key={scan.id}
-                  className="p-3 rounded-xl bg-[#F7F7FA] border border-[#E2E4ED] flex items-center justify-between text-xs"
+                  className={`p-4 rounded-2xl text-center font-bold text-sm transition-all animate-in fade-in slide-in-from-bottom-2 ${
+                    lastScanResult.status === "SUCCESS"
+                      ? "bg-[#00A86B] text-white"
+                      : "bg-[#E52E2E] text-white"
+                  }`}
                 >
-                  <div className="space-y-0.5">
-                    <div className="flex items-center gap-1.5 font-bold text-[#111326]">
-                      <span>{scan.attendeeName}</span>
-                      <span className="text-[10px] bg-[#2A1464] text-white px-2 py-0.2 rounded-md">
-                        {scan.category}
-                      </span>
+                  {lastScanResult.status === "SUCCESS" ? (
+                    <div className="flex items-center justify-center gap-2">
+                      <CheckCircle2 className="w-5 h-5" />
+                      <span>ACCÈS ACCORDÉ — Billet Valide #{lastScanResult.ticketNumber}</span>
                     </div>
-                    <div className="text-[11px] text-[#666A80] font-mono">
-                      {scan.ticketNumber} • {scan.gate}
+                  ) : (
+                    <div className="flex items-center justify-center gap-2">
+                      <XCircle className="w-5 h-5" />
+                      <span>ACCÈS REFUSÉ — Billet Déjà Scanné (Doublon)</span>
                     </div>
-                  </div>
-
-                  <div className="text-right">
-                    {scan.status === "SUCCESS" && (
-                      <span className="bg-emerald-100 text-emerald-700 font-extrabold text-[10px] px-2 py-0.5 rounded-full inline-block">
-                        VALIDÉ ✓
-                      </span>
-                    )}
-                    {scan.status === "DUPLICATE" && (
-                      <span className="bg-rose-100 text-rose-700 font-extrabold text-[10px] px-2 py-0.5 rounded-full inline-block">
-                        DOUBLON ⚠️
-                      </span>
-                    )}
-                    {scan.status === "INVALID" && (
-                      <span className="bg-amber-100 text-amber-700 font-extrabold text-[10px] px-2 py-0.5 rounded-full inline-block">
-                        INVALIDE ✕
-                      </span>
-                    )}
-                    <span className="text-[10px] text-[#666A80] block mt-0.5 font-semibold">
-                      {scan.timestamp}
-                    </span>
-                  </div>
+                  )}
                 </div>
-              ))}
+              )}
+            </div>
+
+            {/* Saisie Manuelle & Journal des Scans */}
+            <div className="lg:col-span-5 space-y-6">
+              {/* Saisie Manuelle Rapide */}
+              <div className="bg-white rounded-3xl p-6 shadow-xl border border-white/60 space-y-4">
+                <h3 className="text-base font-extrabold text-[#111326] flex items-center gap-2">
+                  <Search className="w-5 h-5 text-[#009FEF]" />
+                  <span>Saisie Manuelle du Code</span>
+                </h3>
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    processScan(manualCode);
+                  }}
+                  className="space-y-3"
+                >
+                  <input
+                    type="text"
+                    placeholder="Entrez le numéro (ex: UBBI-2026-9842)"
+                    value={manualCode}
+                    onChange={(e) => setManualCode(e.target.value)}
+                    className="w-full bg-[#F7F7FA] border border-[#E2E4ED] focus:border-[#009FEF] focus:bg-white rounded-xl px-4 py-3 text-sm font-semibold uppercase transition-colors outline-none"
+                  />
+                  <button
+                    type="submit"
+                    className="w-full bg-[#009FEF] hover:bg-[#0084C9] text-white font-extrabold text-xs py-3 px-4 rounded-xl shadow-md transition-colors"
+                  >
+                    Valider le Billet Manuellement
+                  </button>
+                </form>
+              </div>
+
+              {/* Journal des Dernières Entrées en Direct */}
+              <div className="bg-white rounded-3xl p-6 shadow-xl border border-white/60 space-y-4">
+                <h3 className="text-base font-extrabold text-[#111326] flex items-center justify-between">
+                  <span>Derniers Scans Effectués</span>
+                  <Clock className="w-4 h-4 text-[#666A80]" />
+                </h3>
+                <div className="space-y-2.5 max-h-56 overflow-y-auto pr-1">
+                  {scanHistory.map((scan) => (
+                    <div
+                      key={scan.id}
+                      className="flex items-center justify-between p-3 rounded-xl bg-[#F7F7FA] border border-[#E2E4ED] text-xs"
+                    >
+                      <div>
+                        <div className="font-extrabold text-[#111326] flex items-center gap-1.5">
+                          <span>{scan.ticketNumber}</span>
+                          <span className="text-[10px] bg-[#E5F6FF] text-[#009FEF] px-2 py-0.5 rounded-full font-bold">
+                            {scan.category}
+                          </span>
+                        </div>
+                        <div className="text-[#666A80] text-[11px] mt-0.5">{scan.gate} • {scan.timestamp}</div>
+                      </div>
+                      <span
+                        className={`font-extrabold px-2.5 py-1 rounded-full text-[10px] ${
+                          scan.status === "SUCCESS"
+                            ? "bg-[#E6F8F0] text-[#00A86B]"
+                            : "bg-[#FFEBEB] text-[#E52E2E]"
+                        }`}
+                      >
+                        {scan.status === "SUCCESS" ? "VALIDE" : "DOUBLON"}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-      </div>
+        </>
+      )}
     </div>
   );
 }

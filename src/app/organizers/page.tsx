@@ -199,15 +199,15 @@ export default function OrganizersPage() {
             {/* Left Content */}
             <div className="lg:col-span-7 space-y-6">
               <span className="bg-[#E5F6FF] text-[#009FEF] px-4 py-1.5 rounded-full text-xs font-extrabold uppercase tracking-wider inline-block">
-                Application Ubbi Control &amp; Scanner
+                Module Web de Contrôle d'Accès Ubbi
               </span>
 
               <h2 className="text-3xl sm:text-4xl font-extrabold text-[#111326] leading-tight">
-                Contrôlez les accès à vos événements en temps réel, même sans connexion internet.
+                Contrôlez les accès depuis votre smartphone, sans aucune application à installer.
               </h2>
 
               <p className="text-slate-600 leading-relaxed text-sm sm:text-base">
-                Téléchargez l'application officielle d'agent de contrôle pour vos équipes de porte. Scannez les billets QR, imprimez des bracelets physiques et synchronisez plusieurs portes en temps réel.
+                Le jour J, démarrez le scannage en 1 clic depuis votre espace organisateur. Pour vos 1 à 3 agents de porte, partagez simplement un lien de scan sécurisé par WhatsApp sans partager votre mot de passe. Suivez les entrées scannées en direct et verrouillez les scans dès la fermeture des portes.
               </p>
 
               {/* Key Features List */}
@@ -217,28 +217,28 @@ export default function OrganizersPage() {
                     <Smartphone className="w-5 h-5" />
                   </div>
                   <div>
-                    <h3 className="text-sm font-bold text-[#111326]">Scan QR ultra-rapide</h3>
-                    <p className="text-xs text-[#666A80]">Validez plus de 60 billets par minute par agent.</p>
+                    <h3 className="text-sm font-bold text-[#111326]">Zéro Application Requise</h3>
+                    <p className="text-xs text-[#666A80]">Fonctionne directement sur Safari &amp; Chrome.</p>
                   </div>
                 </div>
 
                 <div className="flex items-start gap-3">
                   <div className="w-9 h-9 rounded-xl bg-[#F2EEFB] text-[#190262] flex items-center justify-center flex-shrink-0">
-                    <WifiOff className="w-5 h-5" />
+                    <Zap className="w-5 h-5" />
                   </div>
                   <div>
-                    <h3 className="text-sm font-bold text-[#111326]">Mode Hors-Ligne (Offline)</h3>
-                    <p className="text-xs text-[#666A80]">Continuez le contrôle même sans réseau 4G.</p>
+                    <h3 className="text-sm font-bold text-[#111326]">Lien Partagé aux Agents (1 à 3)</h3>
+                    <p className="text-xs text-[#666A80]">Vos agents scannent sans accéder à votre compte.</p>
                   </div>
                 </div>
 
                 <div className="flex items-start gap-3">
                   <div className="w-9 h-9 rounded-xl bg-[#E5F6FF] text-[#009FEF] flex items-center justify-center flex-shrink-0">
-                    <Printer className="w-5 h-5" />
+                    <BarChart3 className="w-5 h-5" />
                   </div>
                   <div>
-                    <h3 className="text-sm font-bold text-[#111326]">Impression de bracelets</h3>
-                    <p className="text-xs text-slate-500">Compatible avec imprimantes thermiques Bluetooth.</p>
+                    <h3 className="text-sm font-bold text-[#111326]">Compteur d'Entrées en Direct</h3>
+                    <p className="text-xs text-slate-500">Mis à jour instantanément après chaque scan.</p>
                   </div>
                 </div>
 
@@ -247,35 +247,29 @@ export default function OrganizersPage() {
                     <ShieldCheck className="w-5 h-5" />
                   </div>
                   <div>
-                    <h3 className="text-sm font-bold text-[#111326]">Anti-Fraude Garanti</h3>
-                    <p className="text-xs text-slate-500">Détection instantanée des réutilisations de billets.</p>
+                    <h3 className="text-sm font-bold text-[#111326]">Verrouillage à la Fermeture</h3>
+                    <p className="text-xs text-slate-500">Bloquez les accès à la fermeture des portes.</p>
                   </div>
                 </div>
               </div>
 
-              {/* Download Badge CTA */}
+              {/* Action Link CTAs */}
               <div className="pt-4 flex flex-wrap gap-4 items-center">
-                <button
-                  type="button"
-                  className="bg-[#111326] text-white hover:bg-black font-bold px-6 py-3 rounded-2xl text-xs flex items-center gap-3 shadow-md transition-all"
+                <Link
+                  href="/access-control"
+                  className="bg-[#009FEF] hover:bg-[#0084C9] text-white font-extrabold px-6 py-3.5 rounded-2xl text-xs flex items-center gap-2 shadow-md transition-all"
                 >
-                  <Download className="w-5 h-5 text-[#009FEF]" />
-                  <div className="text-left">
-                    <p className="text-[10px] text-slate-400 uppercase font-semibold">Télécharger sur</p>
-                    <p className="text-sm font-extrabold leading-none">App Store (iOS)</p>
-                  </div>
-                </button>
+                  <QrCode className="w-4 h-4" />
+                  <span>Tester le Scanner de Porte Web</span>
+                </Link>
 
-                <button
-                  type="button"
-                  className="bg-[#111326] text-white hover:bg-black font-bold px-6 py-3 rounded-2xl text-xs flex items-center gap-3 shadow-md transition-all"
+                <Link
+                  href="/organizers/create"
+                  className="bg-[#111326] text-white hover:bg-black font-extrabold px-6 py-3.5 rounded-2xl text-xs flex items-center gap-2 shadow-md transition-all"
                 >
-                  <Download className="w-5 h-5 text-[#009FEF]" />
-                  <div className="text-left">
-                    <p className="text-[10px] text-slate-400 uppercase font-semibold">Télécharger sur</p>
-                    <p className="text-sm font-extrabold leading-none">Google Play (Android)</p>
-                  </div>
-                </button>
+                  <span>Créer mon événement</span>
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
               </div>
             </div>
 
