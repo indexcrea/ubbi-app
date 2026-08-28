@@ -39,26 +39,23 @@ export default function HomePage() {
         {/* 1. HERO SECTION (Fixe en arrière-plan pendant le scroll) */}
         {/* ========================================================= */}
         <section
-          className="sticky top-16 sm:top-20 z-0 overflow-hidden pt-12 pb-24 lg:pt-16 lg:pb-28 min-h-[580px] lg:min-h-[640px] flex items-center"
+          className="sticky top-16 sm:top-20 z-0 overflow-hidden pt-8 pb-16 sm:pt-12 sm:pb-24 lg:pt-16 lg:pb-28 min-h-auto lg:min-h-[640px] flex flex-col justify-center"
           style={{ background: "linear-gradient(135deg, #190262 0%, #24027D 100%)" }}
         >
-          {/* Arrière-plan visuel Hero avec object-cover sur toute la largeur (z-10) */}
-          <HeroPhoneHandVisual />
-
           {/* Contenu textuel avant-plan (z-20) */}
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-20 w-full">
-            <div className="max-w-xl lg:max-w-lg xl:max-w-xl space-y-5 text-center lg:text-left z-20">
+            <div className="max-w-xl lg:max-w-lg xl:max-w-xl space-y-4 sm:space-y-5 text-center lg:text-left z-20 mx-auto lg:mx-0">
               {/* Logo Ubbi complet uniquement */}
               <div className="flex items-center justify-center lg:justify-start py-1">
                 <img
                   src="/ubbi-logo-complet.png"
                   alt="ubbi"
-                  className="w-auto h-20 sm:h-28 md:h-32 lg:h-36 xl:h-40 max-w-full lg:max-w-md object-contain"
+                  className="w-auto h-16 sm:h-24 md:h-28 lg:h-36 xl:h-40 max-w-full lg:max-w-md object-contain"
                 />
               </div>
 
               {/* Texte descriptif */}
-              <p className="text-base sm:text-lg text-slate-200 leading-relaxed max-w-lg mx-auto lg:mx-0 font-normal">
+              <p className="text-sm sm:text-lg text-slate-200 leading-relaxed max-w-lg mx-auto lg:mx-0 font-normal">
                 La plateforme tout-en-un pour créer, vendre et contrôler l'accès à vos événements en toute simplicité.
               </p>
 
@@ -74,6 +71,9 @@ export default function HomePage() {
               </div>
             </div>
           </div>
+
+          {/* Visuel Hero Smartphone (Desktop en fond, Mobile sous le CTA) */}
+          <HeroPhoneHandVisual />
         </section>
 
         {/* ========================================================= */}
