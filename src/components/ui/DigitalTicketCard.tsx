@@ -163,7 +163,7 @@ export const DigitalTicketCard: React.FC<DigitalTicketCardProps> = ({
             </div>
 
             <p className="text-[11px] text-[#666A80] font-semibold mt-3 relative z-10">
-              Scannage automatique à la porte d'accès Ubbi
+              Présentez ce billet à l'entrée pour valider votre accès
             </p>
           </div>
         </div>

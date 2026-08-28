@@ -227,7 +227,7 @@ export async function generateTicketPDF(
     pdf.setTextColor(102, 106, 128);
     pdf.setFontSize(7.5);
     pdf.setFont("helvetica", "bold");
-    pdf.text("Scannage automatique a la porte d'acces Ubbi", qrBoxX + (qrBoxWidth / 2), qrBoxY + 75, { align: "center" });
+    pdf.text("Presentez ce billet a l'entree pour valider votre acces", qrBoxX + (qrBoxWidth / 2), qrBoxY + 75, { align: "center" });
 
     // =========================================================
     // BOTTOM TICKET CARD FOOTER (Clean ASCII text)
