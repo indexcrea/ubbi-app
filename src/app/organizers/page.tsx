@@ -163,9 +163,6 @@ export default function OrganizersPage() {
                     <p className="text-xs font-extrabold uppercase tracking-widest text-white/90">
                       Revenu Net Organisateur
                     </p>
-                    <span className="bg-white/20 text-xs font-bold px-2.5 py-1 rounded-full text-white">
-                      Reversement 24h
-                    </span>
                   </div>
                   <p className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white">
                     {formatFCFA(netRevenue)}
@@ -178,7 +175,7 @@ export default function OrganizersPage() {
                 {/* Payout guarantee item */}
                 <div className="flex items-center gap-3 pt-2 text-xs text-slate-300">
                   <CheckCircle2 className="w-4 h-4 text-[#009FEF] flex-shrink-0" />
-                  <span>Disponibilité directe des fonds sur compte bancaire ou compte Wave.</span>
+                  <span>Disponibilité des fonds par virement et mobile money.</span>
                 </div>
               </div>
             </div>
