@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import {
@@ -15,11 +16,13 @@ import {
   CheckCircle2,
   Image as ImageIcon,
   Lock,
+  X,
 } from "lucide-react";
 import { saveNewEvent } from "@/utils/eventStore";
 import { isUserLoggedIn } from "@/utils/authStore";
 
 export default function CreateEventPage() {
+  const router = useRouter();
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [step, setStep] = useState<number>(1);
   const [title, setTitle] = useState("");
@@ -96,10 +99,25 @@ export default function CreateEventPage() {
       <main className="flex-1 pt-24 pb-20 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
         {/* Auth Protection Gate Modal for Unauthenticated Organizers */}
         {isAuthenticated === false && (
-          <div className="fixed inset-0 z-50 bg-[#0a0331]/80 backdrop-blur-md flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
-            <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-2xl border border-white/60 max-w-md w-full text-center space-y-5 animate-in fade-in zoom-in-95 duration-200">
+          <div
+            onClick={() => router.push("/")}
+            className="fixed inset-0 z-50 bg-[#0a0331]/80 backdrop-blur-md flex items-center justify-center p-4 sm:p-6 overflow-y-auto cursor-pointer"
+          >
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className="bg-white rounded-3xl p-6 sm:p-8 shadow-2xl border border-white/60 max-w-md w-full text-center space-y-5 animate-in fade-in zoom-in-95 duration-200 relative cursor-default"
+            >
+              {/* Bouton de Fermeture X */}
+              <button
+                onClick={() => router.push("/")}
+                className="absolute top-4 right-4 p-2 rounded-full text-[#666A80] hover:text-[#111326] hover:bg-[#F7F7FA] transition-colors"
+                title="Fermer et retourner à l'accueil"
+              >
+                <X className="w-5 h-5" />
+              </button>
+
               {/* Lock Icon */}
-              <div className="w-16 h-16 bg-[#E5F6FF] text-[#009FEF] rounded-2xl flex items-center justify-center mx-auto shadow-sm">
+              <div className="w-16 h-16 bg-[#E5F6FF] text-[#009FEF] rounded-2xl flex items-center justify-center mx-auto shadow-sm mt-2">
                 <Lock className="w-8 h-8" />
               </div>
 
