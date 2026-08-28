@@ -198,19 +198,49 @@ export async function generateTicketPDF(
       pdf.setFont("helvetica", "bold");
       pdf.text(data.status || "VALIDE", 110, 105);
 
-      // Code QR Note Box
-      pdf.setFillColor(247, 247, 250);
-      pdf.roundedRect(22, 115, pdfWidth - 44, 30, 4, 4, "F");
+      // Code QR Note & Image Box
+      const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(data.ticketNumber)}`;
 
-      pdf.setTextColor(42, 20, 100);
-      pdf.setFontSize(10);
-      pdf.setFont("helvetica", "bold");
-      pdf.text("CONTRÔLE D'ACCÈS SÉCURISÉ QR CODE", 30, 127);
+      try {
+        const qrResponse = await fetch(qrUrl);
+        const blob = await qrResponse.blob();
+        const reader = new FileReader();
 
-      pdf.setTextColor(102, 106, 128);
-      pdf.setFontSize(8.5);
-      pdf.setFont("helvetica", "normal");
-      pdf.text("Présentez ce billet au scanner à l'entrée du lieu.", 30, 134);
+        const base64Promise = new Promise<string>((resolve) => {
+          reader.onloadend = () => resolve(reader.result as string);
+          reader.readAsDataURL(blob);
+        });
+
+        const qrDataUrl = await base64Promise;
+
+        // Draw QR Container Box
+        pdf.setFillColor(247, 247, 250);
+        pdf.roundedRect(22, 115, pdfWidth - 44, 45, 4, 4, "F");
+        pdf.setDrawColor(226, 228, 237);
+        pdf.roundedRect(22, 115, pdfWidth - 44, 45, 4, 4, "D");
+
+        // Add QR Image on left
+        pdf.addImage(qrDataUrl, "PNG", 28, 120, 35, 35);
+
+        // Add QR Text info on right
+        pdf.setTextColor(42, 20, 100);
+        pdf.setFontSize(11);
+        pdf.setFont("helvetica", "bold");
+        pdf.text("CONTRÔLE D'ACCÈS SÉCURISÉ", 70, 128);
+
+        pdf.setTextColor(0, 159, 239);
+        pdf.setFontSize(10);
+        pdf.setFont("helvetica", "bold");
+        pdf.text(`Billet ID: ${data.ticketNumber}`, 70, 135);
+
+        pdf.setTextColor(102, 106, 128);
+        pdf.setFontSize(8.5);
+        pdf.setFont("helvetica", "normal");
+        pdf.text("Présentez ce QR Code unique au scanner à la porte d'accès.", 70, 142);
+        pdf.text("Validation instantanée et sécurisée.", 70, 148);
+      } catch (e) {
+        console.warn("Could not load QR code image for PDF fallback", e);
+      }
 
       pdf.save(`Billet-Ubbi-${data.ticketNumber}.pdf`);
     }

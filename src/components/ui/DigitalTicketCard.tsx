@@ -77,9 +77,13 @@ export const DigitalTicketCard: React.FC<DigitalTicketCardProps> = ({
           />
           <div className="absolute inset-0 bg-gradient-to-t from-[#190262] via-[#190262]/80 to-black/40" />
 
-          {/* Ligne Supérieure : Logo Ubbi & Badge Catégorie */}
+          {/* Ligne Supérieure : Logo Ubbi Monogramme U & Badge Catégorie */}
           <div className="flex items-center justify-between relative z-10">
-            <UbbiLogo variant="light" height={28} showTagline={false} />
+            <img
+              src="/ubbi-monogramme-u.png"
+              alt="Ubbi Monogramme U"
+              className="h-9 w-auto object-contain drop-shadow-md"
+            />
             <div className="bg-[#009FEF] text-white text-xs font-extrabold px-3 py-1 rounded-full uppercase tracking-wider shadow-md flex items-center gap-1">
               <Sparkles className="w-3.5 h-3.5 text-white" />
               <span>Pass {category}</span>
@@ -141,68 +145,23 @@ export const DigitalTicketCard: React.FC<DigitalTicketCardProps> = ({
               <img src={eventImage} alt="" className="w-full h-full object-cover filter blur-md scale-110" />
             </div>
 
-            {/* Scan Beam Overlay */}
-            {isScanning && (
-              <div className="absolute inset-0 bg-gradient-to-b from-[#009FEF]/30 via-transparent to-[#009FEF]/10 z-30 animate-pulse flex items-center justify-center">
-                <div className="bg-[#2A1464] text-white text-xs font-bold px-4 py-1.5 rounded-full shadow-lg flex items-center gap-2">
-                  <Scan className="w-4 h-4 text-[#009FEF] animate-spin" />
-                  Passe la porte Ubbi...
-                </div>
-              </div>
-            )}
-
             {/* Emplacement QR Code Dédié (Encadré blanc net) */}
-            <div className="relative z-10 w-full max-w-[210px] bg-white rounded-2xl p-3 shadow-md border-2 border-[#009FEF]/40 flex flex-col items-center">
+            <div className="relative z-10 w-full max-w-[220px] bg-white rounded-2xl p-3.5 shadow-md border-2 border-[#009FEF]/40 flex flex-col items-center">
               <span className="text-[9px] font-extrabold text-[#009FEF] uppercase tracking-wider mb-2 bg-[#E5F6FF] px-2.5 py-0.5 rounded-full border border-[#009FEF]/20">
-                Emplacement QR Code
+                QR CODE SÉCURISÉ UBBI
               </span>
 
-              {/* QR Code Graphics auto-généré */}
-              <div className="p-1.5 bg-white rounded-xl border border-[#E2E4ED] mb-1">
-                <svg width="130" height="130" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  {/* QR Finder Patterns */}
-                  <rect x="5" y="5" width="28" height="28" rx="4" fill="#2A1464" />
-                  <rect x="9" y="9" width="20" height="20" rx="2" fill="#FFFFFF" />
-                  <rect x="13" y="13" width="12" height="12" rx="1" fill="#2A1464" />
-
-                  <rect x="67" y="5" width="28" height="28" rx="4" fill="#2A1464" />
-                  <rect x="71" y="9" width="20" height="20" rx="2" fill="#FFFFFF" />
-                  <rect x="75" y="13" width="12" height="12" rx="1" fill="#2A1464" />
-
-                  <rect x="5" y="67" width="28" height="28" rx="4" fill="#2A1464" />
-                  <rect x="9" y="71" width="20" height="20" rx="2" fill="#FFFFFF" />
-                  <rect x="13" y="75" width="12" height="12" rx="1" fill="#2A1464" />
-
-                  {/* Random Data Matrices simulating real QR */}
-                  <rect x="38" y="8" width="6" height="6" fill="#009FEF" />
-                  <rect x="48" y="8" width="12" height="6" fill="#2A1464" />
-                  <rect x="38" y="18" width="6" height="12" fill="#2A1464" />
-                  <rect x="48" y="24" width="8" height="6" fill="#009FEF" />
-
-                  <rect x="8" y="38" width="12" height="6" fill="#2A1464" />
-                  <rect x="24" y="38" width="6" height="12" fill="#009FEF" />
-                  <rect x="8" y="48" width="6" height="12" fill="#2A1464" />
-
-                  {/* Ubbi Center Icon Emblem */}
-                  <rect x="38" y="38" width="24" height="24" rx="6" fill="#2A1464" />
-                  <polygon points="45,43 56,46 56,58 45,55" fill="#009FEF" />
-                  <circle cx="48" cy="50" r="1" fill="#FFFFFF" />
-
-                  <rect x="67" y="38" width="12" height="6" fill="#2A1464" />
-                  <rect x="83" y="38" width="12" height="12" fill="#009FEF" />
-                  <rect x="67" y="48" width="6" height="12" fill="#2A1464" />
-
-                  <rect x="38" y="67" width="12" height="6" fill="#2A1464" />
-                  <rect x="54" y="67" width="10" height="10" fill="#009FEF" />
-                  <rect x="38" y="77" width="6" height="18" fill="#2A1464" />
-                  <rect x="48" y="83" width="16" height="12" fill="#2A1464" />
-                  <rect x="68" y="67" width="27" height="6" fill="#2A1464" />
-                  <rect x="68" y="77" width="12" height="18" fill="#009FEF" />
-                  <rect x="83" y="83" width="12" height="12" fill="#2A1464" />
-                </svg>
+              {/* VRAI QR Code ISO scannable par tout appareil */}
+              <div className="p-1 bg-white rounded-xl border border-[#E2E4ED] shadow-xs mb-1">
+                <img
+                  src={`https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(ticketNumber)}`}
+                  alt={`QR Code Billet ${ticketNumber}`}
+                  crossOrigin="anonymous"
+                  className="w-36 h-36 object-contain rounded-lg"
+                />
               </div>
 
-              <span className="text-[10px] font-mono text-[#2A1464] font-extrabold mt-0.5">
+              <span className="text-[11px] font-mono text-[#2A1464] font-extrabold mt-1">
                 {ticketNumber}
               </span>
             </div>
@@ -210,14 +169,6 @@ export const DigitalTicketCard: React.FC<DigitalTicketCardProps> = ({
             <p className="text-[11px] text-[#666A80] font-semibold mt-3 relative z-10">
               Scannage automatique à la porte d'accès Ubbi
             </p>
-
-            <button
-              onClick={simulateScan}
-              className="mt-2 text-xs font-bold text-[#009FEF] hover:text-[#0084C9] bg-white px-3.5 py-1.5 rounded-xl border border-[#009FEF]/40 shadow-xs flex items-center gap-1.5 transition-all relative z-10"
-            >
-              <Scan className="w-3.5 h-3.5" />
-              Simuler le contrôle d'accès
-            </button>
           </div>
         </div>
 
