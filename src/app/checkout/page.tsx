@@ -21,6 +21,36 @@ import {
   Ticket,
 } from "lucide-react";
 
+const COUNTRY_CODES = [
+  { code: "+221", flag: "🇸🇳", country: "Sénégal" },
+  { code: "+225", flag: "🇨🇮", country: "Côte d'Ivoire" },
+  { code: "+223", flag: "🇲🇱", country: "Mali" },
+  { code: "+224", flag: "🇬🇳", country: "Guinée" },
+  { code: "+226", flag: "🇧🇫", country: "Burkina Faso" },
+  { code: "+222", flag: "🇲🇷", country: "Mauritanie" },
+  { code: "+220", flag: "🇬🇲", country: "Gambie" },
+  { code: "+228", flag: "🇹🇬", country: "Togo" },
+  { code: "+229", flag: "🇧🇯", country: "Bénin" },
+  { code: "+237", flag: "🇨🇲", country: "Cameroun" },
+  { code: "+241", flag: "🇬🇦", country: "Gabon" },
+  { code: "+242", flag: "🇨🇬", country: "Congo (Brazzaville)" },
+  { code: "+243", flag: "🇨🇩", country: "RDC (Kinshasa)" },
+  { code: "+234", flag: "🇳🇬", country: "Nigeria" },
+  { code: "+212", flag: "🇲🇦", country: "Maroc" },
+  { code: "+213", flag: "🇩🇿", country: "Algérie" },
+  { code: "+216", flag: "🇹🇳", country: "Tunisie" },
+  { code: "+33", flag: "🇫🇷", country: "France" },
+  { code: "+1", flag: "🇺🇸", country: "États-Unis / Canada" },
+  { code: "+44", flag: "🇬🇧", country: "Royaume-Uni" },
+  { code: "+34", flag: "🇪🇸", country: "Espagne" },
+  { code: "+39", flag: "🇮🇹", country: "Italie" },
+  { code: "+32", flag: "🇧🇪", country: "Belgique" },
+  { code: "+41", flag: "🇨🇭", country: "Suisse" },
+  { code: "+49", flag: "🇩🇪", country: "Allemagne" },
+  { code: "+971", flag: "🇦🇪", country: "Émirats Arabes Unis" },
+  { code: "+966", flag: "🇸🇦", country: "Arabie Saoudite" },
+];
+
 function CheckoutContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -40,10 +70,12 @@ function CheckoutContent() {
   const loggedUser = typeof window !== "undefined" ? getLoggedInUser() : null;
 
   const [step, setStep] = useState<number>(1);
+  const [countryCode, setCountryCode] = useState("+221");
+  const [phoneInput, setPhoneInput] = useState("");
   const [formData, setFormData] = useState({
     fullName: loggedUser ? `${loggedUser.firstName || ""} ${loggedUser.lastName || ""}`.trim() : "",
     email: loggedUser ? loggedUser.email : "",
-    phone: loggedUser ? loggedUser.phone || "" : "",
+    phone: "",
     paymentMethod: "wave" as "wave" | "om" | "card",
   });
 
@@ -56,10 +88,12 @@ function CheckoutContent() {
   const total = subtotal + serviceFee;
 
   const handleGoToPayment = () => {
-    if (!formData.fullName.trim() || !formData.phone.trim()) {
+    if (!formData.fullName.trim() || !phoneInput.trim()) {
       setValidationError("Veuillez remplir votre Nom & Prénom ainsi que votre Numéro WhatsApp pour continuer.");
       return;
     }
+    const fullPhone = `${countryCode} ${phoneInput.trim()}`;
+    setFormData((prev) => ({ ...prev, phone: fullPhone }));
     setValidationError(null);
     setStep(3);
   };
@@ -186,18 +220,35 @@ function CheckoutContent() {
                     <label className="block text-xs font-semibold text-[#666A80] mb-1">
                       Numéro de téléphone WhatsApp *
                     </label>
-                    <div className="relative">
-                      <Phone className="w-4 h-4 text-[#666A80] absolute left-3.5 top-1/2 -translate-y-1/2" />
-                      <input
-                        type="tel"
-                        placeholder="Ex: +221 77 000 00 00"
-                        value={formData.phone}
-                        onChange={(e) => {
-                          setValidationError(null);
-                          setFormData({ ...formData, phone: e.target.value });
-                        }}
-                        className="w-full bg-[#F7F7FA] border border-[#E2E4ED] focus:border-[#009FEF] rounded-xl pl-10 pr-4 py-2.5 text-[#111326] font-medium outline-none"
-                      />
+                    <div className="flex gap-2">
+                      {/* Liste déroulante indicatifs pays */}
+                      <select
+                        value={countryCode}
+                        onChange={(e) => setCountryCode(e.target.value)}
+                        className="bg-[#F7F7FA] border border-[#E2E4ED] focus:border-[#009FEF] rounded-xl px-3 py-2.5 text-xs font-bold text-[#111326] outline-none cursor-pointer"
+                      >
+                        {COUNTRY_CODES.map((c) => (
+                          <option key={c.code + c.country} value={c.code}>
+                            {c.flag} {c.code} ({c.country})
+                          </option>
+                        ))}
+                      </select>
+
+                      <div className="relative flex-1">
+                        <Phone className="w-4 h-4 text-[#666A80] absolute left-3.5 top-1/2 -translate-y-1/2" />
+                        <input
+                          type="tel"
+                          placeholder="77 000 00 00"
+                          value={phoneInput}
+                          onChange={(e) => {
+                            setValidationError(null);
+                            const val = e.target.value;
+                            setPhoneInput(val);
+                            setFormData({ ...formData, phone: `${countryCode} ${val}` });
+                          }}
+                          className="w-full bg-[#F7F7FA] border border-[#E2E4ED] focus:border-[#009FEF] rounded-xl pl-10 pr-4 py-2.5 text-[#111326] font-medium outline-none"
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>
