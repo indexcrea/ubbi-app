@@ -14,7 +14,7 @@ interface DigitalTicketCardProps {
   time?: string;
   venue?: string;
   attendeeName?: string;
-  status?: "VALIDE" | "UTILISÉ" | "ANNULÉ";
+  status?: "NON SCANNÉ" | "VALIDE" | "UTILISÉ" | "ANNULÉ" | string;
 }
 
 export const DigitalTicketCard: React.FC<DigitalTicketCardProps> = ({
@@ -26,7 +26,7 @@ export const DigitalTicketCard: React.FC<DigitalTicketCardProps> = ({
   time = "20:30",
   venue = "Dakar Arena, Diamniadio",
   attendeeName = "Amadou Diallo",
-  status = "VALIDE",
+  status = "NON SCANNÉ",
 }) => {
   const [isScanning, setIsScanning] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
@@ -51,6 +51,7 @@ export const DigitalTicketCard: React.FC<DigitalTicketCardProps> = ({
         venue,
         attendeeName,
         status,
+        eventImage,
       },
       ticketRef.current
     );
@@ -66,16 +67,16 @@ export const DigitalTicketCard: React.FC<DigitalTicketCardProps> = ({
       <div ref={ticketRef} className="relative bg-white rounded-3xl shadow-2xl border border-[#E2E4ED] overflow-hidden text-[#111326]">
         
         {/* ========================================================= */}
-        {/* GABARIT BILLET : EN-TÊTE PERSONNALISÉselon L'AFFICHE         */}
+        {/* GABARIT BILLET : EN-TÊTE PERSONNALISÉ                      */}
         {/* ========================================================= */}
-        <div className="relative h-44 p-5 flex flex-col justify-between overflow-hidden text-white">
+        <div className="relative h-40 p-5 flex flex-col justify-between overflow-hidden text-white">
           {/* Photo de couverture de l'affiche de l'événement */}
           <img
             src={eventImage}
             alt={eventName}
             className="absolute inset-0 w-full h-full object-cover"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#190262] via-[#190262]/80 to-black/40" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#190262] via-[#190262]/80 to-black/30" />
 
           {/* Ligne Supérieure : Logo Ubbi Monogramme U & Badge Catégorie */}
           <div className="flex items-center justify-between relative z-10">
@@ -92,9 +93,6 @@ export const DigitalTicketCard: React.FC<DigitalTicketCardProps> = ({
 
           {/* Titre de l'événement */}
           <div className="relative z-10">
-            <span className="text-[10px] text-[#009FEF] font-extrabold uppercase tracking-widest bg-black/40 px-2 py-0.5 rounded-md backdrop-blur-xs inline-block mb-1">
-              Affiche Officielle de l'Événement
-            </span>
             <h3 className="text-xl font-extrabold text-white leading-tight drop-shadow-md">{eventName}</h3>
           </div>
         </div>
@@ -119,10 +117,16 @@ export const DigitalTicketCard: React.FC<DigitalTicketCardProps> = ({
             </div>
             <div>
               <span className="text-[#666A80] block text-[10px] uppercase font-semibold tracking-wider">Statut d'accès</span>
-              <span className="inline-flex items-center gap-1 font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
-                <CheckCircle2 className="w-3.5 h-3.5" />
-                {status}
-              </span>
+              {status.toUpperCase().includes("VALIDE") || status.toUpperCase().includes("UTILISÉ") ? (
+                <span className="inline-flex items-center gap-1 font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  SCANNÉ / VALIDÉ
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1 font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md border border-slate-200">
+                  NON SCANNÉ
+                </span>
+              )}
             </div>
 
             <div>

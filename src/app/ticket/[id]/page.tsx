@@ -45,7 +45,8 @@ export default function TicketPage() {
         time,
         venue,
         attendeeName: "Amadou Diallo",
-        status: "VALIDE",
+        status: "NON SCANNÉ",
+        eventImage,
       },
       ticketCardRef.current
     );
@@ -87,7 +88,7 @@ export default function TicketPage() {
           <div className="text-center mb-8">
             <div className="inline-flex items-center gap-1.5 bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full text-xs font-bold mb-2">
               <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-              Billet Officiel Validé
+              Billet Officiel Prêt
             </div>
             <h1 className="text-3xl font-extrabold text-[#111326]">Votre Accès Événement Ubbi</h1>
             <p className="text-sm text-[#666A80] mt-1">
@@ -105,7 +106,7 @@ export default function TicketPage() {
             time={time}
             venue={venue}
             attendeeName="Amadou Diallo"
-            status="VALIDE"
+            status="NON SCANNÉ"
           />
         </div>
       </main>
