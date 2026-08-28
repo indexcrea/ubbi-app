@@ -20,6 +20,7 @@ import {
   Building2,
   CheckCircle2,
   Sparkles,
+  LogOut,
 } from "lucide-react";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
@@ -55,6 +56,12 @@ export default function AdminDashboardPage() {
     } else {
       setPinError(true);
     }
+  };
+
+  const handleAdminLogout = () => {
+    sessionStorage.removeItem("ubbi_admin_authenticated");
+    setIsAuthenticated(false);
+    setAdminPinInput("");
   };
 
   // Initial mock users + live Supabase users
@@ -122,8 +129,9 @@ export default function AdminDashboardPage() {
 
   // Combine live Supabase users with mock users
   const allUsers = [...dbProfiles, ...initialUsers.filter((u) => !dbProfiles.some((db) => db.email === u.email))];
+  const organizerUsers = allUsers.filter((u) => u.role === "organizer" || !u.role);
 
-  const filteredUsers = allUsers.filter(
+  const filteredUsers = organizerUsers.filter(
     (u) =>
       u.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       u.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -228,27 +236,37 @@ export default function AdminDashboardPage() {
               </p>
             </div>
 
-            <button
-              onClick={fetchSupabaseProfiles}
-              className="bg-white/10 hover:bg-white/20 text-white font-bold text-xs px-4 py-2.5 rounded-xl border border-white/20 flex items-center gap-2 transition-all self-start sm:self-center"
-            >
-              <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? "animate-spin" : ""}`} />
-              <span>Actualiser les données</span>
-            </button>
+            <div className="flex flex-wrap items-center gap-2 self-start sm:self-center">
+              <button
+                onClick={fetchSupabaseProfiles}
+                className="bg-white/10 hover:bg-white/20 text-white font-bold text-xs px-4 py-2.5 rounded-xl border border-white/20 flex items-center gap-2 transition-all"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? "animate-spin" : ""}`} />
+                <span>Actualiser les données</span>
+              </button>
+
+              <button
+                onClick={handleAdminLogout}
+                className="bg-red-500/80 hover:bg-red-600 text-white font-extrabold text-xs px-4 py-2.5 rounded-xl border border-red-400/40 flex items-center gap-2 transition-all shadow-sm"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+                <span>Déconnexion</span>
+              </button>
+            </div>
           </div>
         </div>
 
         {/* Global KPIs Stat Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
-          {/* Card 1: Total Inscriptions */}
+          {/* Card 1: Total Organisateurs */}
           <div className="bg-white rounded-2xl p-6 border border-[#E2E4ED] shadow-sm space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Inscriptions Totales</span>
+              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Organisateurs Inscrits</span>
               <div className="w-10 h-10 rounded-xl bg-[#E5F6FF] text-[#009FEF] flex items-center justify-center">
                 <Users className="w-5 h-5" />
               </div>
             </div>
-            <p className="text-3xl font-extrabold text-[#111326]">{allUsers.length}</p>
+            <p className="text-3xl font-extrabold text-[#111326]">{organizerUsers.length}</p>
             <p className="text-xs text-emerald-600 font-semibold flex items-center gap-1">
               <ArrowUpRight className="w-3.5 h-3.5" />
               +100% Comptes vérifiés sur Supabase
@@ -310,7 +328,7 @@ export default function AdminDashboardPage() {
               activeTab === "users" ? "text-[#009FEF]" : "text-slate-500 hover:text-slate-800"
             }`}
           >
-            <span>Inscriptions Utilisateurs ({allUsers.length})</span>
+            <span>Organisateurs Inscrits ({organizerUsers.length})</span>
             {activeTab === "users" && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#009FEF]" />}
           </button>
 
@@ -330,8 +348,8 @@ export default function AdminDashboardPage() {
           <div className="bg-white rounded-3xl border border-[#E2E4ED] shadow-sm overflow-hidden mb-8">
             <div className="p-6 border-b border-[#E2E4ED] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
-                <h2 className="text-lg font-bold text-[#111326]">Dernières Inscriptions sur Ubbi</h2>
-                <p className="text-xs text-slate-500">Liste des utilisateurs et organisateurs inscrits enregistrés dans Supabase</p>
+                <h2 className="text-lg font-bold text-[#111326]">Organisateurs Inscrits sur Ubbi</h2>
+                <p className="text-xs text-slate-500">Liste des profils organisateurs certifiés enregistrés dans Supabase</p>
               </div>
 
               <div className="relative max-w-xs w-full">
