@@ -51,30 +51,24 @@ export default function OrganizersPage() {
           className="text-white py-16 sm:py-20 px-4 sm:px-6 lg:px-8 relative overflow-hidden border-b border-white/10"
           style={{ background: "linear-gradient(135deg, #190262 0%, #24027D 100%)" }}
         >
-          <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 items-center relative z-10">
-            <div className="lg:col-span-7 space-y-6 text-center lg:text-left">
-              <span className="bg-[#009FEF]/20 text-[#009FEF] border border-[#009FEF]/40 px-3.5 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider inline-block">
-                Espace Organisateurs Ubbi
-              </span>
-              <h1 className="text-3xl sm:text-5xl font-extrabold leading-tight text-white">
-                Propulsez vos événements avec la billetterie nouvelle génération.
-              </h1>
-              <p className="text-base sm:text-lg text-slate-200 leading-relaxed max-w-xl mx-auto lg:mx-0">
-                Créez vos événements en 2 minutes, vendez vos billets via Wave &amp; OM, et contrôlez vos accès en toute simplicité.
-              </p>
-              <div className="pt-2 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
-                <Link
-                  href="/organizers/create"
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-[#009FEF] hover:bg-[#0084C9] text-white font-extrabold px-8 py-4 rounded-full shadow-lg text-base transition-all hover:scale-105"
-                >
-                  <PlusCircle className="w-5 h-5" />
-                  <span>Créer mon événement maintenant</span>
-                </Link>
-              </div>
-            </div>
-
-            <div className="lg:col-span-5 flex justify-center">
-              <UbbiDoorMetaphor size="lg" glow={true} />
+          <div className="max-w-4xl mx-auto text-center space-y-6 relative z-10">
+            <span className="bg-[#009FEF]/20 text-[#009FEF] border border-[#009FEF]/40 px-3.5 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider inline-block">
+              Espace Organisateurs Ubbi
+            </span>
+            <h1 className="text-3xl sm:text-5xl font-extrabold leading-tight text-white">
+              Propulsez vos événements avec la billetterie nouvelle génération.
+            </h1>
+            <p className="text-base sm:text-lg text-slate-200 leading-relaxed max-w-2xl mx-auto">
+              Créez vos événements en 2 minutes, vendez vos billets via Wave &amp; OM, et contrôlez vos accès en toute simplicité.
+            </p>
+            <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-4">
+              <Link
+                href="/organizers/create"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-[#009FEF] hover:bg-[#0084C9] text-white font-extrabold px-8 py-4 rounded-full shadow-lg text-base transition-all hover:scale-105"
+              >
+                <PlusCircle className="w-5 h-5" />
+                <span>Créer mon événement maintenant</span>
+              </Link>
             </div>
           </div>
         </section>
@@ -190,123 +184,83 @@ export default function OrganizersPage() {
             </div>
           </div>
         </section>
-
         {/* ========================================================= */}
-        {/* 3. APPLICATION MOBILE DE CONTRÔLE D'ACCÈS & SCANNER        */}
+        {/* 3. MODULE WEB DE CONTRÔLE D'ACCÈS                         */}
         {/* ========================================================= */}
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="bg-white rounded-3xl p-8 sm:p-12 border border-[#E2E4ED] shadow-sm grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-            {/* Left Content */}
-            <div className="lg:col-span-7 space-y-6">
-              <span className="bg-[#E5F6FF] text-[#009FEF] px-4 py-1.5 rounded-full text-xs font-extrabold uppercase tracking-wider inline-block">
-                Module Web de Contrôle d'Accès Ubbi
-              </span>
+          <div className="bg-white rounded-3xl p-8 sm:p-12 border border-[#E2E4ED] shadow-sm max-w-4xl mx-auto space-y-6">
+            <span className="bg-[#E5F6FF] text-[#009FEF] px-4 py-1.5 rounded-full text-xs font-extrabold uppercase tracking-wider inline-block">
+              Module Web de Contrôle d'Accès Ubbi
+            </span>
 
-              <h2 className="text-3xl sm:text-4xl font-extrabold text-[#111326] leading-tight">
-                Contrôlez les accès depuis votre smartphone, sans aucune application à installer.
-              </h2>
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-[#111326] leading-tight">
+              Contrôlez les accès depuis votre smartphone, sans aucune application à installer.
+            </h2>
 
-              <p className="text-slate-600 leading-relaxed text-sm sm:text-base">
-                Le jour J, démarrez le scannage en 1 clic depuis votre espace organisateur. Pour vos 1 à 3 agents de porte, partagez simplement un lien de scan sécurisé. Suivez les entrées scannées en direct et verrouillez les scans dès la fermeture des portes.
-              </p>
+            <p className="text-slate-600 leading-relaxed text-sm sm:text-base">
+              Le jour J, démarrez le scannage en 1 clic depuis votre espace organisateur. Pour vos 1 à 3 agents de porte, partagez simplement un lien de scan sécurisé. Suivez les entrées scannées en direct et verrouillez les scans dès la fermeture des portes.
+            </p>
 
-              {/* Key Features List */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-                <div className="flex items-start gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-[#E5F6FF] text-[#009FEF] flex items-center justify-center flex-shrink-0">
-                    <Smartphone className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-bold text-[#111326]">Zéro Application Requise</h3>
-                    <p className="text-xs text-[#666A80]">Fonctionne directement sur Safari &amp; Chrome.</p>
-                  </div>
+            {/* Key Features List */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+              <div className="flex items-start gap-3">
+                <div className="w-9 h-9 rounded-xl bg-[#E5F6FF] text-[#009FEF] flex items-center justify-center flex-shrink-0">
+                  <Smartphone className="w-5 h-5" />
                 </div>
-
-                <div className="flex items-start gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-[#F2EEFB] text-[#190262] flex items-center justify-center flex-shrink-0">
-                    <Zap className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-bold text-[#111326]">Lien Partagé aux Agents (1 à 3)</h3>
-                    <p className="text-xs text-[#666A80]">Vos agents scannent sans accéder à votre compte.</p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-[#E5F6FF] text-[#009FEF] flex items-center justify-center flex-shrink-0">
-                    <BarChart3 className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-bold text-[#111326]">Compteur d'Entrées en Direct</h3>
-                    <p className="text-xs text-slate-500">Mis à jour instantanément après chaque scan.</p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-[#F2EEFB] text-[#190262] flex items-center justify-center flex-shrink-0">
-                    <ShieldCheck className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-bold text-[#111326]">Verrouillage à la Fermeture</h3>
-                    <p className="text-xs text-slate-500">Bloquez les accès à la fermeture des portes.</p>
-                  </div>
+                <div>
+                  <h3 className="text-sm font-bold text-[#111326]">Zéro Application Requise</h3>
+                  <p className="text-xs text-[#666A80]">Fonctionne directement sur Safari &amp; Chrome.</p>
                 </div>
               </div>
 
-              {/* Action Link CTAs */}
-              <div className="pt-4 flex flex-wrap gap-4 items-center">
-                <Link
-                  href="/access-control"
-                  className="bg-[#009FEF] hover:bg-[#0084C9] text-white font-extrabold px-6 py-3.5 rounded-2xl text-xs flex items-center gap-2 shadow-md transition-all"
-                >
-                  <QrCode className="w-4 h-4" />
-                  <span>Tester le Scanner de Porte Web</span>
-                </Link>
+              <div className="flex items-start gap-3">
+                <div className="w-9 h-9 rounded-xl bg-[#F2EEFB] text-[#190262] flex items-center justify-center flex-shrink-0">
+                  <Zap className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-[#111326]">Lien Partagé aux Agents (1 à 3)</h3>
+                  <p className="text-xs text-[#666A80]">Vos agents scannent sans accéder à votre compte.</p>
+                </div>
+              </div>
 
-                <Link
-                  href="/organizers/create"
-                  className="bg-[#111326] text-white hover:bg-black font-extrabold px-6 py-3.5 rounded-2xl text-xs flex items-center gap-2 shadow-md transition-all"
-                >
-                  <span>Créer mon événement</span>
-                  <ArrowRight className="w-4 h-4" />
-                </Link>
+              <div className="flex items-start gap-3">
+                <div className="w-9 h-9 rounded-xl bg-[#E5F6FF] text-[#009FEF] flex items-center justify-center flex-shrink-0">
+                  <BarChart3 className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-[#111326]">Compteur d'Entrées en Direct</h3>
+                  <p className="text-xs text-slate-500">Mis à jour instantanément après chaque scan.</p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3">
+                <div className="w-9 h-9 rounded-xl bg-[#F2EEFB] text-[#190262] flex items-center justify-center flex-shrink-0">
+                  <ShieldCheck className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-[#111326]">Verrouillage à la Fermeture</h3>
+                  <p className="text-xs text-slate-500">Bloquez les accès à la fermeture des portes.</p>
+                </div>
               </div>
             </div>
 
-            {/* Right Scanner Visual Mockup */}
-            <div className="lg:col-span-5 flex justify-center">
-              <div className="w-full max-w-sm bg-[#190262] text-white rounded-3xl p-6 border-4 border-[#009FEF] shadow-2xl space-y-6 relative overflow-hidden">
-                {/* Scanner Screen Header */}
-                <div className="flex items-center justify-between border-b border-white/10 pb-4">
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-emerald-400 animate-pulse" />
-                    <span className="text-xs font-bold">Scanner Actif - Porte 1</span>
-                  </div>
-                  <span className="text-[10px] bg-white/10 px-2 py-0.5 rounded-full text-slate-300">
-                    Agent #04
-                  </span>
-                </div>
+            {/* Action Link CTAs */}
+            <div className="pt-4 flex flex-wrap gap-4 items-center">
+              <Link
+                href="/access-control"
+                className="bg-[#009FEF] hover:bg-[#0084C9] text-white font-extrabold px-6 py-3.5 rounded-2xl text-xs flex items-center gap-2 shadow-md transition-all"
+              >
+                <QrCode className="w-4 h-4" />
+                <span>Tester le Scanner de Porte Web</span>
+              </Link>
 
-                {/* Simulated Target QR Frame */}
-                <div className="bg-white/5 rounded-2xl p-8 border-2 border-dashed border-[#009FEF]/60 text-center space-y-4 relative">
-                  <QrCode className="w-20 h-20 text-[#009FEF] mx-auto animate-pulse" />
-                  <span className="bg-emerald-500 text-white text-xs font-extrabold px-4 py-1.5 rounded-full inline-block shadow-md">
-                    ✓ Billet Valide - VIP
-                  </span>
-                </div>
-
-                {/* Realtime Stats Footer */}
-                <div className="grid grid-cols-2 gap-3 pt-2">
-                  <div className="bg-white/10 rounded-xl p-3 text-center">
-                    <p className="text-[10px] text-slate-300">Scannés</p>
-                    <p className="text-lg font-extrabold text-white">482 / 500</p>
-                  </div>
-                  <div className="bg-white/10 rounded-xl p-3 text-center">
-                    <p className="text-[10px] text-slate-300">Cadence</p>
-                    <p className="text-lg font-extrabold text-[#009FEF]">54 / min</p>
-                  </div>
-                </div>
-              </div>
+              <Link
+                href="/organizers/create"
+                className="bg-[#111326] text-white hover:bg-black font-extrabold px-6 py-3.5 rounded-2xl text-xs flex items-center gap-2 shadow-md transition-all"
+              >
+                <span>Créer mon événement</span>
+                <ArrowRight className="w-4 h-4" />
+              </Link>
             </div>
           </div>
         </section>
