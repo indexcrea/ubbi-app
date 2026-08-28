@@ -390,14 +390,6 @@ export default function OrganizerDashboardPage() {
                               )}
                             </button>
 
-                            <Link
-                              href={`/access-control?event=${evt.slug}`}
-                              className="inline-flex items-center gap-1 bg-[#2A1464] hover:bg-[#1E0D4B] text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow-xs transition-colors"
-                            >
-                              <QrCode className="w-3.5 h-3.5 text-[#009FEF]" />
-                              <span>Contrôle Porte</span>
-                            </Link>
-
                             <button
                               onClick={() => handleDeleteEvent(evt.id || evt.slug, evt.title)}
                               className="inline-flex items-center gap-1 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 text-xs font-bold px-2.5 py-1.5 rounded-lg transition-colors"
