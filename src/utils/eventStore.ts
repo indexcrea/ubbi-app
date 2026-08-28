@@ -1,4 +1,5 @@
 import { MOCK_EVENTS, EventItem } from "@/data/mockEvents";
+import { supabase, isSupabaseConfigured } from "./supabaseClient";
 
 const STORAGE_KEY = "ubbi_custom_events";
 
@@ -9,13 +10,54 @@ export function getStoredEvents(): EventItem[] {
 
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return MOCK_EVENTS;
-    const customEvents: EventItem[] = JSON.parse(raw);
-    // Combine custom events at the beginning + base mock events
+    const customEvents: EventItem[] = raw ? JSON.parse(raw) : [];
     return [...customEvents, ...MOCK_EVENTS];
   } catch (e) {
     console.error("Failed to load events from storage", e);
     return MOCK_EVENTS;
+  }
+}
+
+export async function fetchSupabaseEvents(): Promise<EventItem[]> {
+  if (!isSupabaseConfigured()) {
+    return getStoredEvents();
+  }
+
+  try {
+    const { data, error } = await supabase.from("events").select("*").order("created_at", { ascending: false });
+
+    if (error || !data) {
+      console.warn("Supabase fetch error, fallback to local:", error);
+      return getStoredEvents();
+    }
+
+    const fetchedEvents: EventItem[] = data.map((item: any) => ({
+      id: item.id,
+      slug: item.slug,
+      title: item.title,
+      category: item.category,
+      date: item.date,
+      time: item.time,
+      location: "Dakar",
+      venue: item.venue,
+      googleMapsUrl: item.google_maps_url,
+      minPrice: item.min_price,
+      image: item.image,
+      featured: item.featured,
+      createdOnSite: true,
+      organizer: {
+        name: item.organizer_name || "Mon Organisation Ubbi",
+        verified: true,
+        avatar: item.organizer_avatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80",
+      },
+      description: `Événement ${item.title} à ${item.venue}. Billets officiels sur Ubbi.`,
+      tickets: item.tickets_json || [],
+    }));
+
+    return [...fetchedEvents, ...MOCK_EVENTS];
+  } catch (err) {
+    console.error("Supabase fetch exception", err);
+    return getStoredEvents();
   }
 }
 
@@ -79,9 +121,36 @@ export function saveNewEvent(data: {
     })),
   };
 
+  // Save to local storage
   const updatedCustomEvents = [newEvent, ...customEvents];
   if (typeof window !== "undefined") {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedCustomEvents));
+  }
+
+  // Asynchronously insert into Supabase if configured
+  if (isSupabaseConfigured()) {
+    supabase
+      .from("events")
+      .insert([
+        {
+          slug: newEvent.slug,
+          title: newEvent.title,
+          category: newEvent.category,
+          venue: newEvent.venue,
+          date: newEvent.date,
+          time: newEvent.time,
+          google_maps_url: newEvent.googleMapsUrl,
+          min_price: newEvent.minPrice,
+          image: newEvent.image,
+          organizer_name: newEvent.organizer.name,
+          organizer_avatar: newEvent.organizer.avatar,
+          tickets_json: newEvent.tickets,
+          featured: true,
+        },
+      ])
+      .then(({ error }) => {
+        if (error) console.error("Supabase insert error:", error);
+      });
   }
 
   return newEvent;
