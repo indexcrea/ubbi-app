@@ -32,6 +32,31 @@ export default function AdminDashboardPage() {
   const [dbProfiles, setDbProfiles] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Admin Security Auth State
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [adminPinInput, setAdminPinInput] = useState("");
+  const [pinError, setPinError] = useState(false);
+
+  useEffect(() => {
+    // Check if session has valid founder token
+    const storedAuth = typeof window !== "undefined" ? sessionStorage.getItem("ubbi_admin_authenticated") : null;
+    if (storedAuth === "true") {
+      setIsAuthenticated(true);
+    }
+  }, []);
+
+  const handleAdminLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    // Default Secret Founder Passcode: ubbi2026 (or ubbi)
+    if (adminPinInput.trim() === "ubbi2026" || adminPinInput.trim() === "ubbi") {
+      sessionStorage.setItem("ubbi_admin_authenticated", "true");
+      setIsAuthenticated(true);
+      setPinError(false);
+    } else {
+      setPinError(true);
+    }
+  };
+
   // Initial mock users + live Supabase users
   const initialUsers = [
     {
@@ -114,6 +139,65 @@ export default function AdminDashboardPage() {
   const formatFCFA = (val: number) => {
     return val.toLocaleString("fr-FR") + " FCFA";
   };
+
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-[#0a0331] text-white flex flex-col font-sans relative overflow-hidden">
+        <Navbar />
+
+        <div className="flex-1 flex items-center justify-center p-4 pt-24 pb-16 relative z-10">
+          <div className="bg-[#190262]/90 backdrop-blur-xl border border-white/15 rounded-3xl p-8 max-w-md w-full shadow-2xl space-y-6 text-center">
+            <div className="w-16 h-16 rounded-2xl bg-[#009FEF]/20 text-[#009FEF] border border-[#009FEF]/30 flex items-center justify-center mx-auto shadow-inner">
+              <Lock className="w-8 h-8" />
+            </div>
+
+            <div className="space-y-2">
+              <span className="bg-[#009FEF]/20 text-[#009FEF] border border-[#009FEF]/30 px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider inline-block">
+                Espace Fondateur Restreint
+              </span>
+              <h1 className="text-2xl font-extrabold text-white">Accès Réservé Fondateur Ubbi</h1>
+              <p className="text-slate-300 text-xs leading-relaxed">
+                Ce lien contient les données confidentielles de la plateforme. Entrez votre code d'accès secret administrateur.
+              </p>
+            </div>
+
+            <form onSubmit={handleAdminLogin} className="space-y-4 pt-2">
+              <div>
+                <input
+                  type="password"
+                  placeholder="Mot de passe secret Fondateur..."
+                  value={adminPinInput}
+                  onChange={(e) => setAdminPinInput(e.target.value)}
+                  className={`w-full bg-white/10 border ${
+                    pinError ? "border-red-500 focus:ring-2 focus:ring-red-500" : "border-white/20 focus:border-[#009FEF]"
+                  } rounded-2xl px-4 py-3.5 text-sm text-white placeholder-slate-400 focus:outline-none transition-all text-center font-mono`}
+                  autoFocus
+                />
+                {pinError && (
+                  <p className="text-red-400 text-xs font-semibold mt-2">
+                    Mot de passe incorrect. Veuillez réessayer.
+                  </p>
+                )}
+              </div>
+
+              <button
+                type="submit"
+                className="w-full bg-[#009FEF] hover:bg-[#0084C9] text-white font-extrabold py-3.5 px-6 rounded-2xl shadow-lg text-sm transition-all hover:scale-[1.02]"
+              >
+                Déverrouiller l'Espace Admin 🔓
+              </button>
+            </form>
+
+            <div className="pt-4 border-t border-white/10 text-slate-400 text-[11px]">
+              🔒 Chiffre d'Affaires &amp; Utilisateurs masqués par défaut
+            </div>
+          </div>
+        </div>
+
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#F7F7FA] flex flex-col font-sans">
