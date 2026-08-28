@@ -29,7 +29,7 @@ export const metadata: Metadata = {
     title: "Ubbi — Ticketing & Event Access",
     description:
       "Ouvre l'expérience. La nouvelle façon de découvrir, acheter et vivre vos événements au Sénégal.",
-    url: "https://ubbi.sn",
+    url: "https://ubbi-tickets.com",
     siteName: "Ubbi",
     locale: "fr_SN",
     type: "website",
