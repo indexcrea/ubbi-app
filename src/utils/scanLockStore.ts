@@ -1,14 +1,15 @@
 const LOCK_STORAGE_KEY = "ubbi_scan_locks";
 
 export function getScanLockStatus(eventSlug: string): boolean {
-  if (typeof window === "undefined") return false;
+  if (typeof window === "undefined") return true;
   try {
     const raw = localStorage.getItem(LOCK_STORAGE_KEY);
-    if (!raw) return false;
+    if (!raw) return true;
     const locks = JSON.parse(raw);
-    return Boolean(locks[eventSlug]);
+    // Returns false ONLY if explicitly unlocked by organizer (locks[eventSlug] === false)
+    return locks[eventSlug] !== false;
   } catch (e) {
-    return false;
+    return true;
   }
 }
 

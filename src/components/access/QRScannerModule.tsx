@@ -44,7 +44,7 @@ export function QRScannerModule() {
   const [scanningActive, setScanningActive] = useState(true);
   const [cameraFacing, setCameraFacing] = useState<"environment" | "user">("environment");
   const [lastScanResult, setLastScanResult] = useState<ScanRecord | null>(null);
-  const [isLocked, setIsLocked] = useState(false);
+  const [isLocked, setIsLocked] = useState(true);
   const [copiedLink, setCopiedLink] = useState(false);
   const [activeAgentCount, setActiveAgentCount] = useState(1);
   const [isScannerStarted, setIsScannerStarted] = useState(false);
@@ -287,6 +287,10 @@ export function QRScannerModule() {
           <button
             onClick={() => {
               setIsScannerStarted(true);
+              setIsLocked(false);
+              if (selectedEventSlug) {
+                setScanLockStatus(selectedEventSlug, false);
+              }
               startCamera();
             }}
             className="inline-flex items-center gap-2.5 bg-[#009FEF] hover:bg-[#0084C9] text-white text-sm font-extrabold px-8 py-4 rounded-2xl shadow-xl transition-all hover:scale-105"
