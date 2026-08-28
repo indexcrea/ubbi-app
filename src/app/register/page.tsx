@@ -8,6 +8,8 @@ import { COUNTRY_CODES } from "@/data/countryCodes";
 import { LandingPageBackdrop } from "@/components/layout/LandingPageBackdrop";
 import { supabase, isSupabaseConfigured } from "@/utils/supabaseClient";
 
+import { loginUser } from "@/utils/authStore";
+
 export default function RegisterPage() {
   const router = useRouter();
   const [firstName, setFirstName] = useState("");
@@ -21,6 +23,16 @@ export default function RegisterPage() {
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+
+    const userProfile = {
+      email,
+      firstName,
+      lastName,
+      phone: `${countryCode} ${phone}`,
+      role: "organizer" as const,
+    };
+
+    loginUser(userProfile);
 
     if (isSupabaseConfigured()) {
       try {
@@ -39,7 +51,11 @@ export default function RegisterPage() {
     }
 
     setIsLoading(false);
-    router.push("/dashboard/organizer");
+    
+    // Check if redirect query param exists
+    const searchParams = new URLSearchParams(window.location.search);
+    const redirectUrl = searchParams.get("redirect") || "/organizers/create";
+    router.push(redirectUrl);
   };
 
   return (

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
@@ -14,10 +14,13 @@ import {
   ArrowRight,
   CheckCircle2,
   Image as ImageIcon,
+  Lock,
 } from "lucide-react";
 import { saveNewEvent } from "@/utils/eventStore";
+import { isUserLoggedIn } from "@/utils/authStore";
 
 export default function CreateEventPage() {
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [step, setStep] = useState<number>(1);
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState("Concert");
@@ -35,6 +38,10 @@ export default function CreateEventPage() {
     { name: "VIP", price: 15000, qty: 100 },
   ]);
   const [published, setPublished] = useState(false);
+
+  useEffect(() => {
+    setIsAuthenticated(isUserLoggedIn());
+  }, []);
 
   const handleFormatChange = (format: "single" | "multiple") => {
     setTicketFormat(format);
@@ -87,6 +94,52 @@ export default function CreateEventPage() {
       <Navbar />
 
       <main className="flex-1 pt-24 pb-20 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+        {/* Auth Protection Gate Modal for Unauthenticated Organizers */}
+        {isAuthenticated === false && (
+          <div className="fixed inset-0 z-50 bg-[#0a0331]/80 backdrop-blur-md flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+            <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-2xl border border-white/60 max-w-md w-full text-center space-y-5 animate-in fade-in zoom-in-95 duration-200">
+              <div className="w-16 h-16 bg-[#E5F6FF] text-[#009FEF] rounded-2xl flex items-center justify-center mx-auto shadow-sm">
+                <Lock className="w-8 h-8" />
+              </div>
+
+              <div>
+                <span className="text-[11px] font-extrabold text-[#2A1464] bg-[#F7F7FA] px-3 py-1 rounded-full border border-[#E2E4ED] inline-block mb-2">
+                  Compte Organisateur Requis
+                </span>
+                <h2 className="text-2xl font-extrabold text-[#111326]">
+                  Créer un Événement sur Ubbi
+                </h2>
+                <p className="text-xs text-[#666A80] mt-1.5 leading-relaxed">
+                  Exclusivité Organisateur : Vous devez posséder un compte organisateur pour intégrer et publier vos événements sur Ubbi.
+                </p>
+              </div>
+
+              <div className="space-y-2.5 pt-2">
+                <Link
+                  href="/register?redirect=/organizers/create"
+                  className="w-full bg-[#009FEF] hover:bg-[#0084C9] text-white font-extrabold text-sm py-3.5 px-4 rounded-xl shadow-md flex items-center justify-center gap-2 transition-colors"
+                >
+                  <span>Créer un compte Organisateur</span>
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
+
+                <Link
+                  href="/login?redirect=/organizers/create"
+                  className="w-full bg-[#F7F7FA] hover:bg-[#E2E4ED] text-[#111326] font-bold text-xs py-3 px-4 rounded-xl border border-[#E2E4ED] flex items-center justify-center gap-2 transition-colors"
+                >
+                  <span>J'ai déjà un compte : Se connecter</span>
+                </Link>
+              </div>
+
+              <div className="pt-2 border-t border-[#E2E4ED]">
+                <Link href="/" className="text-xs text-[#666A80] hover:text-[#009FEF] font-semibold">
+                  ← Annuler et retourner à l'accueil
+                </Link>
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="mb-8">
           <span className="text-xs font-bold text-[#009FEF] uppercase tracking-widest block mb-1">
             Création d'Événement

@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 import { Mail, Lock, ArrowRight, X } from "lucide-react";
 import { LandingPageBackdrop } from "@/components/layout/LandingPageBackdrop";
 
+import { loginUser } from "@/utils/authStore";
+
 export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
@@ -13,7 +15,16 @@ export default function LoginPage() {
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    router.push("/dashboard/organizer");
+    loginUser({
+      email,
+      firstName: "Organisateur",
+      lastName: "Ubbi",
+      role: "organizer",
+    });
+
+    const searchParams = new URLSearchParams(window.location.search);
+    const redirectUrl = searchParams.get("redirect") || "/organizers/create";
+    router.push(redirectUrl);
   };
 
   return (
