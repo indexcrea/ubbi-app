@@ -21,6 +21,7 @@ import {
   Copy,
   Check,
   Smartphone,
+  QrCode,
 } from "lucide-react";
 import { getStoredEvents } from "@/utils/eventStore";
 import { EventItem } from "@/data/mockEvents";
@@ -46,6 +47,7 @@ export function QRScannerModule() {
   const [isLocked, setIsLocked] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
   const [activeAgentCount, setActiveAgentCount] = useState(1);
+  const [isScannerStarted, setIsScannerStarted] = useState(false);
 
   const [cameraActive, setCameraActive] = useState(false);
   const [cameraError, setCameraError] = useState<string | null>(null);
@@ -209,31 +211,25 @@ export function QRScannerModule() {
       {/* 1. Header Control Bar & Lock Switch */}
       <div className="bg-white rounded-3xl p-6 shadow-xl border border-white/60 flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="bg-[#E5F6FF] text-[#009FEF] text-[11px] font-extrabold px-3 py-0.5 rounded-full uppercase tracking-wider">
-              Module Web de Contrôle Porte
-            </span>
-            <span className="bg-[#F7F7FA] text-[#666A80] text-[11px] font-bold px-2.5 py-0.5 rounded-full border border-[#E2E4ED]">
-              Sans application mobile
-            </span>
-          </div>
-          <h2 className="text-2xl font-extrabold text-[#111326]">
-            {selectedEvent ? selectedEvent.title : "Scanner de Billets"}
+          <span className="text-[10px] font-extrabold text-[#009FEF] uppercase tracking-widest bg-[#E5F6FF] px-2.5 py-1 rounded-md border border-[#009FEF]/20">
+            MODULE WEB DE CONTRÔLE PORTE
+          </span>
+          <h2 className="text-xl sm:text-2xl font-extrabold text-[#111326] mt-2">
+            {events.find((e) => e.slug === selectedEventSlug)?.title || "Sélectionnez un événement"}
           </h2>
-          <p className="text-xs text-[#666A80] mt-0.5">
+          <p className="text-xs text-[#666A80] mt-1">
             Validez les entrées depuis votre smartphone ou partagez le lien sécurisé avec vos contrôleurs.
           </p>
         </div>
 
-        {/* Action Controls & Lock Toggle */}
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex items-center gap-3">
           {/* Lock / Unlock Toggle Button */}
           <button
             onClick={toggleLockState}
-            className={`px-4 py-2.5 rounded-xl font-extrabold text-xs flex items-center gap-2 shadow-sm transition-all ${
+            className={`px-4 py-2.5 rounded-xl font-extrabold text-xs flex items-center gap-2 border transition-all shadow-xs ${
               isLocked
-                ? "bg-[#FFEBEB] text-[#E52E2E] border border-[#FFC2C2] hover:bg-[#FFD6D6]"
-                : "bg-[#E6F8F0] text-[#00A86B] border border-[#B3EBD3] hover:bg-[#D1F3E4]"
+                ? "bg-red-50 border-red-200 text-red-700 hover:bg-red-100"
+                : "bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100"
             }`}
           >
             <Lock className="w-4 h-4" />
@@ -244,16 +240,38 @@ export function QRScannerModule() {
           <button
             onClick={handleCopyLink}
             className="bg-[#2A1464] hover:bg-[#1E0D4B] text-white font-bold text-xs px-4 py-2.5 rounded-xl shadow-sm flex items-center gap-2 transition-colors"
-            title="Copier le lien sécurisé pour vos 1 à 3 agents à la porte"
+            title="Copier le lien sécurisé pour vos contrôleurs d'accès"
           >
             {copiedLink ? <Check className="w-4 h-4 text-[#009FEF]" /> : <Share2 className="w-4 h-4" />}
-            <span>{copiedLink ? "Lien Copié !" : "Partager lien aux agents (1 à 3 phones)"}</span>
+            <span>{copiedLink ? "Lien Copié !" : "Partager le lien aux agents"}</span>
           </button>
         </div>
       </div>
 
-      {/* If Event Scans are Locked by Organizer */}
-      {isLocked ? (
+      {/* Button Démarrer le Scanner de Porte Banner (If not started yet) */}
+      {!isScannerStarted ? (
+        <div className="bg-[#190262] text-white rounded-3xl p-8 sm:p-12 shadow-2xl border border-white/10 text-center space-y-5">
+          <div className="w-20 h-20 bg-[#009FEF]/20 text-[#009FEF] border border-[#009FEF]/30 rounded-3xl flex items-center justify-center mx-auto shadow-inner">
+            <QrCode className="w-10 h-10" />
+          </div>
+          <div className="max-w-md mx-auto space-y-2">
+            <h3 className="text-2xl font-extrabold text-white">Prêt pour le Contrôle d'Accès Porte</h3>
+            <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+              Cliquez ci-dessous pour démarrer le scanner et activer le viseur caméra smartphone en direct.
+            </p>
+          </div>
+          <button
+            onClick={() => {
+              setIsScannerStarted(true);
+              startCamera();
+            }}
+            className="inline-flex items-center gap-2.5 bg-[#009FEF] hover:bg-[#0084C9] text-white text-sm font-extrabold px-8 py-4 rounded-2xl shadow-xl transition-all hover:scale-105"
+          >
+            <QrCode className="w-5 h-5 text-white" />
+            <span>Démarrer le Scanner de Porte</span>
+          </button>
+        </div>
+      ) : isLocked ? (
         <div className="bg-[#FFEBEB] border-2 border-[#FFC2C2] rounded-3xl p-8 sm:p-12 text-center space-y-4 shadow-lg animate-in fade-in zoom-in-95">
           <div className="w-20 h-20 bg-[#E52E2E] text-white rounded-3xl flex items-center justify-center mx-auto shadow-md">
             <Lock className="w-10 h-10" />
@@ -324,9 +342,8 @@ export function QRScannerModule() {
                 <span className="text-xs font-bold uppercase tracking-wider">Smartphones Agents</span>
                 <Smartphone className="w-5 h-5 text-[#2A1464]" />
               </div>
-              <div className="text-2xl sm:text-3xl font-extrabold text-[#2A1464] flex items-baseline gap-1">
-                <span>{activeAgentCount}</span>
-                <span className="text-xs font-normal text-[#666A80]">/ 3 max actifs</span>
+              <div className="text-2xl sm:text-3xl font-extrabold text-[#2A1464]">
+                {activeAgentCount}
               </div>
               <p className="text-[11px] text-[#00A86B] font-semibold mt-2 flex items-center gap-1">
                 <span className="w-2 h-2 rounded-full bg-[#00A86B] animate-pulse" />

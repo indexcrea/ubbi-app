@@ -279,13 +279,20 @@ export default function EventDetailPage() {
                   </div>
 
                   {/* Buy Button CTA */}
-                  <button
-                    onClick={handleCheckout}
-                    className="w-full bg-[#009FEF] hover:bg-[#0084C9] text-white font-extrabold py-4 rounded-xl shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2 text-base"
-                  >
-                    <span>Acheter mon billet</span>
-                    <ArrowRight className="w-5 h-5" />
-                  </button>
+                  {(event as any).isSuspended ? (
+                    <div className="p-4 bg-amber-50 border border-amber-200 text-amber-800 font-extrabold text-sm rounded-xl text-center flex items-center justify-center gap-2 shadow-xs">
+                      <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse" />
+                      <span>Ventes temporairement suspendues par l'organisateur</span>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={handleCheckout}
+                      className="w-full bg-[#009FEF] hover:bg-[#0084C9] text-white font-extrabold py-4 rounded-xl shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2 text-base"
+                    >
+                      <span>Acheter mon billet</span>
+                      <ArrowRight className="w-5 h-5" />
+                    </button>
+                  )}
 
                   <div className="flex items-center justify-center gap-2 text-xs text-[#666A80]">
                     <ShieldCheck className="w-4 h-4 text-emerald-500" />

@@ -178,3 +178,22 @@ export function deleteStoredEvent(idOrSlug: string): EventItem[] {
     return getStoredEvents();
   }
 }
+
+export function toggleSuspendEvent(idOrSlug: string): EventItem[] {
+  if (typeof window === "undefined") return getStoredEvents();
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    const customEvents: EventItem[] = raw ? JSON.parse(raw) : [];
+    const updatedCustomEvents = customEvents.map((e) => {
+      if (e.id === idOrSlug || e.slug === idOrSlug) {
+        return { ...e, isSuspended: !((e as any).isSuspended) };
+      }
+      return e;
+    });
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedCustomEvents));
+    return getStoredEvents();
+  } catch (e) {
+    console.error("Failed to toggle suspension", e);
+    return getStoredEvents();
+  }
+}

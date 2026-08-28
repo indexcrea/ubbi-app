@@ -6,7 +6,7 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { UbbiLogo } from "@/components/brand/UbbiLogo";
 import { QRScannerModule } from "@/components/access/QRScannerModule";
-import { getStoredEvents, deleteStoredEvent } from "@/utils/eventStore";
+import { getStoredEvents, deleteStoredEvent, toggleSuspendEvent } from "@/utils/eventStore";
 import {
   LayoutDashboard,
   Calendar,
@@ -21,6 +21,8 @@ import {
   CheckCircle2,
   Scan,
   Trash2,
+  PauseCircle,
+  PlayCircle,
 } from "lucide-react";
 
 export default function OrganizerDashboardPage() {
@@ -34,6 +36,14 @@ export default function OrganizerDashboardPage() {
   const handleDeleteEvent = (idOrSlug: string, title: string) => {
     if (confirm(`Voulez-vous vraiment supprimer définitivement l'événement "${title}" ?`)) {
       const updated = deleteStoredEvent(idOrSlug);
+      setEventList(updated);
+    }
+  };
+
+  const handleToggleSuspendEvent = (idOrSlug: string, title: string, currentlySuspended: boolean) => {
+    const action = currentlySuspended ? "réactiver les ventes de" : "suspendre temporairement";
+    if (confirm(`Voulez-vous vraiment ${action} l'événement "${title}" ?`)) {
+      const updated = toggleSuspendEvent(idOrSlug);
       setEventList(updated);
     }
   };
@@ -66,7 +76,7 @@ export default function OrganizerDashboardPage() {
               className="bg-[#2A1464] hover:bg-[#1E0D4B] text-white font-extrabold text-xs sm:text-sm px-4 py-3 rounded-xl shadow-md flex items-center gap-2 transition-all"
             >
               <QrCode className="w-4 h-4 text-[#009FEF]" />
-              <span>📱 Démarrer le Scanner de Porte</span>
+              <span>Démarrer le Scanner de Porte</span>
             </button>
 
             <Link
@@ -327,7 +337,29 @@ export default function OrganizerDashboardPage() {
                               ((evt as any).ticketsSold || 0) * (evt.minPrice || evt.tickets?.[0]?.price || 2000)
                             )} FCFA
                           </td>
-                          <td className="px-4 py-3.5 text-right space-x-2 flex items-center justify-end gap-2">
+                          <td className="px-4 py-3.5 text-right flex items-center justify-end gap-2 flex-wrap">
+                            <button
+                              onClick={() => handleToggleSuspendEvent(evt.id || evt.slug, evt.title, !!(evt as any).isSuspended)}
+                              className={`inline-flex items-center gap-1 border text-xs font-bold px-2.5 py-1.5 rounded-lg transition-colors ${
+                                (evt as any).isSuspended
+                                  ? "bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border-emerald-300"
+                                  : "bg-amber-50 hover:bg-amber-100 text-amber-700 border-amber-300"
+                              }`}
+                              title={(evt as any).isSuspended ? "Réactiver les ventes" : "Suspendre temporairement les ventes"}
+                            >
+                              {(evt as any).isSuspended ? (
+                                <>
+                                  <PlayCircle className="w-3.5 h-3.5" />
+                                  <span>Réactiver</span>
+                                </>
+                              ) : (
+                                <>
+                                  <PauseCircle className="w-3.5 h-3.5" />
+                                  <span>Suspendre</span>
+                                </>
+                              )}
+                            </button>
+
                             <Link
                               href={`/access-control?event=${evt.slug}`}
                               className="inline-flex items-center gap-1 bg-[#2A1464] hover:bg-[#1E0D4B] text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow-xs transition-colors"
