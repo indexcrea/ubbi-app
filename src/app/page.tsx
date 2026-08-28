@@ -36,10 +36,10 @@ export default function HomePage() {
 
       <main className="flex-1 pt-16 sm:pt-20 relative">
         {/* ========================================================= */}
-        {/* 1. HERO SECTION (Fixe en arrière-plan pendant le scroll) */}
+        {/* 1. HERO SECTION */}
         {/* ========================================================= */}
         <section
-          className="sticky top-16 sm:top-20 z-0 overflow-hidden pt-8 pb-16 sm:pt-12 sm:pb-24 lg:pt-16 lg:pb-28 min-h-auto lg:min-h-[640px] flex flex-col justify-center"
+          className="relative md:sticky top-16 sm:top-20 z-0 overflow-hidden pt-8 pb-12 sm:pt-12 sm:pb-20 lg:pt-16 lg:pb-28 min-h-auto lg:min-h-[640px] flex flex-col justify-center"
           style={{ background: "linear-gradient(135deg, #190262 0%, #24027D 100%)" }}
         >
           {/* Contenu textuel avant-plan (z-20) */}
@@ -77,16 +77,16 @@ export default function HomePage() {
         </section>
 
         {/* ========================================================= */}
-        {/* 2. RIDEAU 1 : "ÉVÉNEMENTS À LA UNE" (Sticky sous la Navbar) */}
+        {/* 2. RIDEAU 1 : "ÉVÉNEMENTS À LA UNE" */}
         {/* ========================================================= */}
-        <section className="sticky top-16 sm:top-20 z-10 bg-[#F7F7FA] rounded-t-[32px] sm:rounded-t-[48px] shadow-[0_-25px_60px_rgba(0,0,0,0.5)] border-t border-white/20 py-16 text-[#111326] min-h-[520px]">
+        <section className="relative md:sticky top-16 sm:top-20 z-10 bg-[#F7F7FA] rounded-t-[28px] sm:rounded-t-[48px] shadow-[0_-25px_60px_rgba(0,0,0,0.5)] border-t border-white/20 py-12 md:py-16 text-[#111326]">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
+            <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 md:mb-10 gap-4">
               <div>
                 <span className="bg-[#E5F6FF] text-[#009FEF] px-3.5 py-1 rounded-full text-xs font-extrabold uppercase tracking-wider inline-block mb-2">
                   Créés par les organisateurs sur Ubbi
                 </span>
-                <h2 className="text-3xl sm:text-4xl font-extrabold text-[#111326]">
+                <h2 className="text-2.5xl sm:text-4xl font-extrabold text-[#111326]">
                   Événements à la <span className="text-[#009FEF]">une</span>
                 </h2>
               </div>
@@ -110,9 +110,9 @@ export default function HomePage() {
         </section>
 
         {/* ========================================================= */}
-        {/* 3. RIDEAU 2 : "NOS SERVICES" ET SUITE (Glisse par-dessus Événements à la une) */}
+        {/* 3. RIDEAU 2 : "NOS SERVICES" ET SUITE */}
         {/* ========================================================= */}
-        <div className="relative z-20 bg-[#190262] rounded-t-[32px] sm:rounded-t-[48px] shadow-[0_-30px_70px_rgba(0,0,0,0.7)] border-t border-white/20">
+        <div className="relative z-20 bg-[#190262] rounded-t-[28px] sm:rounded-t-[48px] shadow-[0_-30px_70px_rgba(0,0,0,0.7)] border-t border-white/20">
           {/* SECTION "NOS SERVICES" */}
           <section
             id="services"
